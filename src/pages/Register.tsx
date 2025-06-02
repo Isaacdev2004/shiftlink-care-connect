@@ -75,6 +75,14 @@ const Register = () => {
     }));
   };
 
+  const handleTermsChange = (checked: boolean | 'indeterminate') => {
+    setAcceptedTerms(checked === true);
+  };
+
+  const handleAntiCircumventionChange = (checked: boolean | 'indeterminate') => {
+    setAcceptedAntiCircumvention(checked === true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
@@ -246,7 +254,7 @@ const Register = () => {
                   <Checkbox
                     id="terms"
                     checked={acceptedTerms}
-                    onCheckedChange={setAcceptedTerms}
+                    onCheckedChange={handleTermsChange}
                     className="mt-1"
                   />
                   <div className="text-sm">
@@ -267,7 +275,7 @@ const Register = () => {
                   <Checkbox
                     id="anti-circumvention"
                     checked={acceptedAntiCircumvention}
-                    onCheckedChange={setAcceptedAntiCircumvention}
+                    onCheckedChange={handleAntiCircumventionChange}
                     className="mt-1"
                   />
                   <div className="text-sm">
