@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Calendar, MapPin, DollarSign, Users, AlertTriangle, Upload } from 'lucide-react';
+import { Plus, Calendar, MapPin, DollarSign, Users, AlertTriangle, Upload, Clock } from 'lucide-react';
 import CredentialAlerts from '@/components/CredentialAlerts';
 import CertificateUpload from '@/components/CertificateUpload';
+import EVVClockSystem from '@/components/EVVClockSystem';
 
 const DSPDashboard = () => {
   const [upcomingShifts] = useState([
@@ -107,8 +108,9 @@ const DSPDashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="shifts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="shifts">My Shifts</TabsTrigger>
+            <TabsTrigger value="clockin">Clock In/Out</TabsTrigger>
             <TabsTrigger value="credentials">Credentials</TabsTrigger>
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
             <TabsTrigger value="training">Training</TabsTrigger>
@@ -143,6 +145,10 @@ const DSPDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="clockin">
+            <EVVClockSystem />
           </TabsContent>
 
           <TabsContent value="credentials">
