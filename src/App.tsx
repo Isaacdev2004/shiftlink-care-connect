@@ -10,8 +10,10 @@ import Register from "./pages/Register";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
+import CoursesPage from "./pages/CoursesPage";
 import DSPDashboard from "./pages/dashboards/DSPDashboard";
 import AgencyDashboard from "./pages/dashboards/AgencyDashboard";
+import TrainerDashboard from "./pages/dashboards/TrainerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,13 +28,13 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/courses" element={<CoursesPage />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/dashboard/dsp" element={<DSPDashboard />} />
           <Route path="/dashboard/agency" element={<AgencyDashboard />} />
-          {/* Additional dashboard routes will be added as we build them */}
-          <Route path="/dashboard/trainer" element={<DSPDashboard />} />
+          <Route path="/dashboard/trainer" element={<TrainerDashboard />} />
           <Route path="/dashboard/county" element={<DSPDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

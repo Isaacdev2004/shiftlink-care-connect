@@ -69,7 +69,10 @@ const Index = () => {
               </div>
               <h1 className="text-xl font-bold text-medical-blue">Home Health ShiftLink</h1>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" onClick={() => navigate('/courses')}>
+                Training Courses
+              </Button>
               <Button variant="outline" onClick={() => navigate('/login')}>
                 Login
               </Button>
