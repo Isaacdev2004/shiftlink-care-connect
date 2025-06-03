@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,8 +15,12 @@ import {
   AlertCircle,
   CheckCircle,
   Upload,
-  Bell
+  Bell,
+  MessageSquare
 } from 'lucide-react';
+import DocumentUpload from '@/components/DocumentUpload';
+import MessagingSystem from '@/components/MessagingSystem';
+import CredentialAlerts from '@/components/CredentialAlerts';
 
 const DSPDashboard = () => {
   const [profileCompletion] = useState(75);
@@ -43,13 +46,6 @@ const DSPDashboard = () => {
       pay: '$20/hr',
       status: 'pending'
     }
-  ];
-
-  const credentials = [
-    { name: 'CPR Certification', status: 'valid', expiry: '2024-12-15', urgent: false },
-    { name: 'First Aid', status: 'valid', expiry: '2024-11-20', urgent: false },
-    { name: 'Background Check', status: 'expired', expiry: '2024-05-01', urgent: true },
-    { name: 'Med Administration', status: 'valid', expiry: '2024-08-30', urgent: false }
   ];
 
   const availableShifts = [
@@ -170,10 +166,12 @@ const DSPDashboard = () => {
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="shifts">Available Shifts</TabsTrigger>
             <TabsTrigger value="credentials">Credentials</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
@@ -219,37 +217,34 @@ const DSPDashboard = () => {
                 </CardContent>
               </Card>
 
-              {/* Credential Status */}
+              {/* Quick Credential Status */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <FileText className="w-5 h-5" />
-                    <span>Credential Status</span>
+                    <span>Credential Alerts</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {credentials.map((credential, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        {credential.status === 'valid' ? (
-                          <CheckCircle className="w-5 h-5 text-green-500" />
-                        ) : (
-                          <AlertCircle className="w-5 h-5 text-red-500" />
-                        )}
-                        <div>
-                          <p className="font-medium">{credential.name}</p>
-                          <p className="text-sm text-gray-600">Expires: {credential.expiry}</p>
-                        </div>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <AlertCircle className="w-4 h-4 text-red-500" />
+                        <span className="text-sm font-medium">Background Check Expired</span>
                       </div>
-                      {credential.urgent && (
-                        <Badge variant="destructive">Urgent</Badge>
-                      )}
+                      <Badge variant="destructive">Action Required</Badge>
                     </div>
-                  ))}
-                  <Button variant="outline" className="w-full">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Documents
-                  </Button>
+                    <div className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="w-4 h-4 text-yellow-500" />
+                        <span className="text-sm font-medium">First Aid expires in 47 days</span>
+                      </div>
+                      <Badge className="bg-yellow-100 text-yellow-800">Reminder</Badge>
+                    </div>
+                    <Button variant="outline" className="w-full">
+                      View All Credentials
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -301,25 +296,15 @@ const DSPDashboard = () => {
           </TabsContent>
 
           <TabsContent value="credentials" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Manage Your Credentials</CardTitle>
-                <CardDescription>
-                  Keep your certifications up to date to qualify for more shifts
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Credential Management</h3>
-                  <p className="text-gray-600 mb-4">Upload and manage your professional credentials</p>
-                  <Button className="bg-medical-blue hover:bg-blue-800">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Credentials
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <CredentialAlerts />
+          </TabsContent>
+
+          <TabsContent value="messages" className="space-y-6">
+            <MessagingSystem userRole="dsp" />
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-6">
+            <DocumentUpload />
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">

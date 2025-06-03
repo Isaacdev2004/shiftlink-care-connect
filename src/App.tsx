@@ -11,6 +11,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import DSPDashboard from "./pages/dashboards/DSPDashboard";
+import AgencyDashboard from "./pages/dashboards/AgencyDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,8 +30,8 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/dashboard/dsp" element={<DSPDashboard />} />
+          <Route path="/dashboard/agency" element={<AgencyDashboard />} />
           {/* Additional dashboard routes will be added as we build them */}
-          <Route path="/dashboard/agency" element={<DSPDashboard />} />
           <Route path="/dashboard/trainer" element={<DSPDashboard />} />
           <Route path="/dashboard/county" element={<DSPDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
