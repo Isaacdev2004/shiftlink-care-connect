@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Shield, Eye, EyeOff, Users, MapPin, Star } from 'lucide-react';
+import { Shield, Eye, EyeOff, Users, MapPin, Star, Home } from 'lucide-react';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -83,9 +82,25 @@ const Register = () => {
     setAcceptedAntiCircumvention(checked === true);
   };
 
+  const handleBackToHome = () => {
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
+        {/* Back to Home Button */}
+        <div className="mb-4">
+          <Button 
+            variant="ghost" 
+            onClick={handleBackToHome}
+            className="flex items-center space-x-2 text-medical-blue hover:text-blue-800"
+          >
+            <Home className="w-4 h-4" />
+            <span>Back to Homepage</span>
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
