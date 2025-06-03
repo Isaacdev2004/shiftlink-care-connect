@@ -39,42 +39,6 @@ const Testimonials = () => {
       rating: 5,
       text: "ShiftLink provides the oversight and compliance tracking we need. The analytics dashboard helps us monitor local healthcare staffing patterns and ensure quality standards are maintained.",
       avatar: "JW"
-    },
-    {
-      id: 5,
-      name: "Lisa Thompson",
-      role: "Direct Support Professional",
-      location: "Fresno, CA",
-      rating: 5,
-      text: "As a single mom, the flexible scheduling is a lifesaver. I can pick up shifts around my kids' schedule, and the skill-based matching means I get work that aligns with my certifications.",
-      avatar: "LT"
-    },
-    {
-      id: 6,
-      name: "Robert Martinez",
-      role: "Healthcare Agency Owner",
-      location: "Golden State Home Care",
-      rating: 5,
-      text: "The quality of DSPs we find through ShiftLink is exceptional. The platform's verification process and rating system help us maintain high standards while filling shifts quickly.",
-      avatar: "RM"
-    },
-    {
-      id: 7,
-      name: "Angela Kim",
-      role: "Specialized Care Trainer",
-      location: "Advanced Healthcare Training",
-      rating: 5,
-      text: "I love how easy it is to connect with DSPs who need specialized training. The direct certification feature means they can immediately apply new skills to their work. It's a win-win system.",
-      avatar: "AK"
-    },
-    {
-      id: 8,
-      name: "David Foster",
-      role: "Direct Support Professional",
-      location: "San Diego, CA",
-      rating: 5,
-      text: "Three years using ShiftLink and I've built lasting relationships with several agencies. The platform's transparency in pay rates and shift details means no surprises - just quality work opportunities.",
-      avatar: "DF"
     }
   ];
 

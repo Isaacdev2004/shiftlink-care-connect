@@ -5,6 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock, Shield, Users, MapPin, Star } from 'lucide-react';
 import Testimonials from '@/components/Testimonials';
+import HowItWorks from '@/components/HowItWorks';
+import SecurityCompliance from '@/components/SecurityCompliance';
+import PlatformStats from '@/components/PlatformStats';
+import CallToAction from '@/components/CallToAction';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -163,8 +167,17 @@ const Index = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <HowItWorks />
+
+      {/* Platform Statistics Section */}
+      <PlatformStats />
+
       {/* Testimonials Section */}
       <Testimonials />
+
+      {/* Security & Compliance Section */}
+      <SecurityCompliance />
 
       {/* Features Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
@@ -201,6 +214,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Call to Action Section */}
+      <CallToAction />
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
