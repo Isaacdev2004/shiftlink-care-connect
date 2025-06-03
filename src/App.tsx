@@ -14,6 +14,7 @@ import CoursesPage from "./pages/CoursesPage";
 import DSPDashboard from "./pages/dashboards/DSPDashboard";
 import AgencyDashboard from "./pages/dashboards/AgencyDashboard";
 import TrainerDashboard from "./pages/dashboards/TrainerDashboard";
+import AdminDashboard from "./pages/dashboards/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/dashboard/dsp" element={<DSPDashboard />} />
           <Route path="/dashboard/agency" element={<AgencyDashboard />} />
           <Route path="/dashboard/trainer" element={<TrainerDashboard />} />
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/county" element={<DSPDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
