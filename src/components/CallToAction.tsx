@@ -1,39 +1,58 @@
 
 import { ArrowRight, CheckCircle, Users, Building, GraduationCap, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 const CallToAction = () => {
+  const navigate = useNavigate();
+
   const userTypes = [
     {
       icon: Users,
       title: "Direct Support Professionals",
       benefits: ["Flexible scheduling", "Competitive pay", "Skill-based matching"],
       buttonText: "Join as DSP",
-      color: "bg-blue-600 hover:bg-blue-700"
+      color: "bg-blue-600 hover:bg-blue-700",
+      role: "dsp"
     },
     {
       icon: Building,
       title: "Healthcare Agencies",
       benefits: ["Qualified staff", "Reduced gaps", "Compliance tracking"],
       buttonText: "Partner with Us",
-      color: "bg-green-600 hover:bg-green-700"
+      color: "bg-green-600 hover:bg-green-700",
+      role: "agency"
     },
     {
       icon: GraduationCap,
       title: "Training Providers",
       benefits: ["Course management", "Direct certification", "Student tracking"],
       buttonText: "Offer Training",
-      color: "bg-purple-600 hover:bg-purple-700"
+      color: "bg-purple-600 hover:bg-purple-700",
+      role: "trainer"
     },
     {
       icon: MapPin,
       title: "County Administrators",
       benefits: ["Oversight tools", "Compliance monitoring", "Analytics dashboard"],
       buttonText: "Get Access",
-      color: "bg-orange-600 hover:bg-orange-700"
+      color: "bg-orange-600 hover:bg-orange-700",
+      role: "county"
     }
   ];
+
+  const handleRoleButtonClick = (role: string) => {
+    navigate(`/register?role=${role}`);
+  };
+
+  const handleGetStarted = () => {
+    navigate('/register');
+  };
+
+  const handleScheduleDemo = () => {
+    navigate('/contact');
+  };
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-900 via-blue-900 to-green-900 text-white">
@@ -84,7 +103,10 @@ const CallToAction = () => {
                       </li>
                     ))}
                   </ul>
-                  <Button className={`w-full ${type.color} text-white`}>
+                  <Button 
+                    className={`w-full ${type.color} text-white`}
+                    onClick={() => handleRoleButtonClick(type.role)}
+                  >
                     {type.buttonText}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -118,11 +140,20 @@ const CallToAction = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" className="bg-medical-green hover:bg-green-600 text-white px-8 py-3">
+            <Button 
+              size="lg" 
+              className="bg-medical-green hover:bg-green-600 text-white px-8 py-3"
+              onClick={handleGetStarted}
+            >
               Start Today - It's Free
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3"
+              onClick={handleScheduleDemo}
+            >
               Schedule a Demo
             </Button>
           </div>
