@@ -390,7 +390,6 @@ const CredentialTracker = () => {
                       <Switch
                         checked={credential.autoRenewal}
                         onCheckedChange={() => toggleAutoRenewal(credential.id)}
-                        size="sm"
                       />
                     </div>
                     
