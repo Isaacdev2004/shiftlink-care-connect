@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Calendar, MapPin, DollarSign, Users, AlertTriangle, Upload, Clock } from 'lucide-react';
 import CredentialAlerts from '@/components/CredentialAlerts';
+import CredentialTracker from '@/components/CredentialTracker';
 import CertificateUpload from '@/components/CertificateUpload';
 import EVVClockSystem from '@/components/EVVClockSystem';
 
@@ -108,10 +109,11 @@ const DSPDashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="shifts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="shifts">My Shifts</TabsTrigger>
             <TabsTrigger value="clockin">Clock In/Out</TabsTrigger>
             <TabsTrigger value="credentials">Credentials</TabsTrigger>
+            <TabsTrigger value="tracking">Credential Tracking</TabsTrigger>
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
             <TabsTrigger value="training">Training</TabsTrigger>
           </TabsList>
@@ -153,6 +155,10 @@ const DSPDashboard = () => {
 
           <TabsContent value="credentials">
             <CredentialAlerts />
+          </TabsContent>
+
+          <TabsContent value="tracking">
+            <CredentialTracker />
           </TabsContent>
 
           <TabsContent value="certificates">
