@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, Clock, Calendar, Upload } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Credential {
   id: string;
@@ -15,6 +15,8 @@ interface Credential {
 }
 
 const CredentialAlerts = () => {
+  const { toast } = useToast();
+  
   const [credentials, setCredentials] = useState<Credential[]>([
     {
       id: '1',
@@ -95,7 +97,37 @@ const CredentialAlerts = () => {
 
   const handleRenewCredential = (credentialId: string) => {
     console.log('Renewing credential:', credentialId);
-    alert('Redirecting to renewal process...');
+    toast({
+      title: "Renewal Process Started",
+      description: "You will be redirected to the credential renewal portal.",
+    });
+  };
+
+  const handleUploadNewCertificate = () => {
+    console.log('Upload new certificate clicked');
+    toast({
+      title: "Upload Certificate",
+      description: "Opening certificate upload form...",
+    });
+    // In a real app, this would open a file upload dialog or navigate to upload page
+  };
+
+  const handleScheduleRenewal = () => {
+    console.log('Schedule renewal clicked');
+    toast({
+      title: "Schedule Renewal",
+      description: "Opening renewal scheduling system...",
+    });
+    // In a real app, this would open a calendar/scheduling interface
+  };
+
+  const handleVerifyAllCredentials = () => {
+    console.log('Verify all credentials clicked');
+    toast({
+      title: "Credential Verification",
+      description: "Starting verification process for all credentials...",
+    });
+    // In a real app, this would trigger a verification process
   };
 
   const urgentCredentials = credentials.filter(c => c.status === 'expired' || (c.status === 'expiring' && c.daysUntilExpiry <= 30));
@@ -183,15 +215,27 @@ const CredentialAlerts = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center space-x-2"
+              onClick={handleUploadNewCertificate}
+            >
               <Upload className="w-4 h-4" />
               <span>Upload New Certificate</span>
             </Button>
-            <Button variant="outline" className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center space-x-2"
+              onClick={handleScheduleRenewal}
+            >
               <Calendar className="w-4 h-4" />
               <span>Schedule Renewal</span>
             </Button>
-            <Button variant="outline" className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center space-x-2"
+              onClick={handleVerifyAllCredentials}
+            >
               <CheckCircle className="w-4 h-4" />
               <span>Verify All Credentials</span>
             </Button>
