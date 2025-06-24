@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import {
   Zap
 } from 'lucide-react';
 import { calculateShiftMatches, getTopMatches } from '@/utils/matchingAlgorithm';
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data - in a real app, this would come from your backend
 const mockDSPProfile = {
@@ -113,6 +113,7 @@ const ShiftSuggestions = () => {
     shiftType: 'all',
     urgency: 'all'
   });
+  const { toast } = useToast();
 
   const calculateMatches = () => {
     setIsLoading(true);
@@ -137,6 +138,20 @@ const ShiftSuggestions = () => {
     }
     return true;
   });
+
+  const handleApplyShift = (shift: typeof mockShifts[0]) => {
+    toast({
+      title: "Application Submitted",
+      description: `Your application for "${shift.title}" has been submitted successfully.`,
+    });
+  };
+
+  const handleUpdateProfilePreferences = () => {
+    toast({
+      title: "Profile Updated",
+      description: "Your profile preferences have been updated successfully.",
+    });
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
@@ -255,7 +270,10 @@ const ShiftSuggestions = () => {
                     </div>
 
                     <div className="flex space-x-2">
-                      <Button className="flex-1 bg-medical-blue hover:bg-blue-800">
+                      <Button 
+                        className="flex-1 bg-medical-blue hover:bg-blue-800"
+                        onClick={() => handleApplyShift(match.shift)}
+                      >
                         Apply for Shift
                       </Button>
                       <Button variant="outline">
@@ -336,7 +354,11 @@ const ShiftSuggestions = () => {
                     <strong>Rating:</strong> {mockDSPProfile.stats.rating}/5.0 ⭐
                   </div>
                 </div>
-                <Button variant="outline" className="mt-3">
+                <Button 
+                  variant="outline" 
+                  className="mt-3"
+                  onClick={handleUpdateProfilePreferences}
+                >
                   Update Profile Preferences
                 </Button>
               </div>
