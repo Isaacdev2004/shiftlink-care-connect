@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,18 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data - in a real app, this would come from your backend
 const mockShifts = [
@@ -102,7 +113,9 @@ const ShiftBrowser = () => {
     maxDistance: 50
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedShift, setSelectedShift] = useState<typeof mockShifts[0] | null>(null);
   const shiftsPerPage = 6;
+  const { toast } = useToast();
 
   const filteredShifts = mockShifts.filter(shift => {
     const matchesSearch = shift.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -126,6 +139,24 @@ const ShiftBrowser = () => {
       low: 'bg-green-100 text-green-800 border-green-300'
     };
     return colors[urgency as keyof typeof colors] || colors.low;
+  };
+
+  const handleApplyShift = (shift: typeof mockShifts[0]) => {
+    toast({
+      title: "Application Submitted",
+      description: `Your application for "${shift.title}" has been submitted successfully.`,
+    });
+  };
+
+  const handleViewDetails = (shift: typeof mockShifts[0]) => {
+    setSelectedShift(shift);
+  };
+
+  const handleViewTeam = (shift: typeof mockShifts[0]) => {
+    toast({
+      title: "Team Information",
+      description: `Viewing team details for "${shift.title}" shift.`,
+    });
   };
 
   return (
@@ -280,13 +311,23 @@ const ShiftBrowser = () => {
                         </div>
 
                         <div className="flex space-x-2">
-                          <Button className="flex-1 bg-medical-blue hover:bg-blue-800">
+                          <Button 
+                            className="flex-1 bg-medical-blue hover:bg-blue-800"
+                            onClick={() => handleApplyShift(shift)}
+                          >
                             Apply for Shift
                           </Button>
-                          <Button variant="outline">
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleViewDetails(shift)}
+                          >
                             View Details
                           </Button>
-                          <Button variant="outline" size="icon">
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => handleViewTeam(shift)}
+                          >
                             <Users className="w-4 h-4" />
                           </Button>
                         </div>
@@ -336,6 +377,64 @@ const ShiftBrowser = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Shift Details Dialog */}
+      <AlertDialog open={!!selectedShift} onOpenChange={() => setSelectedShift(null)}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{selectedShift?.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Detailed information about this shift
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {selectedShift && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-gray-900">Client</h4>
+                  <p className="text-gray-600">{selectedShift.clientName}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">Shift Type</h4>
+                  <p className="text-gray-600">{selectedShift.shiftType}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">Date & Time</h4>
+                  <p className="text-gray-600">
+                    {new Date(selectedShift.date).toLocaleDateString()} <br />
+                    {selectedShift.startTime} - {selectedShift.endTime}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">Pay Rate</h4>
+                  <p className="text-green-600 font-medium">${selectedShift.hourlyRate}/hour</p>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Location</h4>
+                <p className="text-gray-600">{selectedShift.address}</p>
+                <p className="text-sm text-gray-500">{selectedShift.distance} from your location</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Description</h4>
+                <p className="text-gray-600">{selectedShift.description}</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Star className="w-4 h-4 text-yellow-500" />
+                <span className="text-sm text-gray-600">
+                  {selectedShift.facilityRating} facility rating
+                </span>
+              </div>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogAction onClick={() => selectedShift && handleApplyShift(selectedShift)}>
+              Apply for This Shift
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
