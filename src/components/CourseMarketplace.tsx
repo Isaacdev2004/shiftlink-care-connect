@@ -1,11 +1,12 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Star, MapPin, Calendar, Users, Clock, DollarSign } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Search, Star, MapPin, Calendar, Users, Clock, DollarSign, User, Mail, Phone } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Course {
   id: string;
@@ -27,8 +28,17 @@ const CourseMarketplace = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
+  const [enrollmentForm, setEnrollmentForm] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    specialRequests: ''
+  });
+  const { toast } = useToast();
 
-  const [courses] = useState<Course[]>([
+  const [courses, setCourses] = useState<Course[]>([
     {
       id: '1',
       title: 'CPR & First Aid Certification',
@@ -88,9 +98,54 @@ const CourseMarketplace = () => {
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
-  const handleEnroll = (courseId: string) => {
-    console.log('Enrolling in course:', courseId);
-    // This will be replaced with actual payment integration
+  const handleEnroll = (course: Course) => {
+    if (course.spotsLeft === 0) {
+      toast({
+        title: "Course Full",
+        description: "This course is currently full. Please check back later.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSelectedCourse(course);
+    setIsEnrollModalOpen(true);
+  };
+
+  const handleEnrollmentSubmit = () => {
+    if (!enrollmentForm.fullName || !enrollmentForm.email || !enrollmentForm.phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Update course spots
+    if (selectedCourse) {
+      setCourses(prevCourses => 
+        prevCourses.map(course => 
+          course.id === selectedCourse.id 
+            ? { ...course, spotsLeft: course.spotsLeft - 1 }
+            : course
+        )
+      );
+
+      toast({
+        title: "Enrollment Successful!",
+        description: `You have been enrolled in ${selectedCourse.title}. A confirmation email will be sent shortly.`,
+      });
+
+      // Reset form and close modal
+      setEnrollmentForm({ fullName: '', email: '', phone: '', specialRequests: '' });
+      setIsEnrollModalOpen(false);
+      setSelectedCourse(null);
+    }
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setEnrollmentForm(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -200,7 +255,7 @@ const CourseMarketplace = () => {
               {/* Enroll Button */}
               <Button 
                 className="w-full bg-medical-blue hover:bg-blue-800"
-                onClick={() => handleEnroll(course.id)}
+                onClick={() => handleEnroll(course)}
                 disabled={course.spotsLeft === 0}
               >
                 {course.spotsLeft === 0 ? 'Fully Booked' : 'Enroll Now'}
@@ -219,6 +274,76 @@ const CourseMarketplace = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Enrollment Modal */}
+      <Dialog open={isEnrollModalOpen} onOpenChange={setIsEnrollModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Enroll in Course</DialogTitle>
+            <DialogDescription>
+              {selectedCourse && (
+                <>
+                  <strong>{selectedCourse.title}</strong>
+                  <br />
+                  Instructor: {selectedCourse.instructor}
+                  <br />
+                  Price: ${selectedCourse.price} | Next Date: {selectedCourse.nextDate}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <User className="w-4 h-4" />
+              <Input
+                placeholder="Full Name *" 
+                value={enrollmentForm.fullName}
+                onChange={(e) => handleFormChange('fullName', e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Mail className="w-4 h-4" />
+              <Input
+                type="email"
+                placeholder="Email Address *"
+                value={enrollmentForm.email}
+                onChange={(e) => handleFormChange('email', e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Phone className="w-4 h-4" />
+              <Input
+                type="tel"
+                placeholder="Phone Number *"
+                value={enrollmentForm.phone}
+                onChange={(e) => handleFormChange('phone', e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <div></div>
+              <Input
+                placeholder="Special requests (optional)"
+                value={enrollmentForm.specialRequests}
+                onChange={(e) => handleFormChange('specialRequests', e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEnrollModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEnrollmentSubmit} className="bg-medical-blue hover:bg-blue-800">
+              Complete Enrollment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
