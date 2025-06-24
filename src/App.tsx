@@ -11,6 +11,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import CoursesPage from "./pages/CoursesPage";
+import ShiftBrowserPage from "./pages/ShiftBrowserPage";
 import DSPDashboard from "./pages/dashboards/DSPDashboard";
 import AgencyDashboard from "./pages/dashboards/AgencyDashboard";
 import TrainerDashboard from "./pages/dashboards/TrainerDashboard";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/shifts" element={<ShiftBrowserPage />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/contact" element={<Contact />} />

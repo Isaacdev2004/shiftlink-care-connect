@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,8 @@ import CertificateUpload from '@/components/CertificateUpload';
 import EVVClockSystem from '@/components/EVVClockSystem';
 
 const DSPDashboard = () => {
+  const navigate = useNavigate();
+  
   const [upcomingShifts] = useState([
     {
       id: '1',
@@ -47,7 +49,10 @@ const DSPDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">DSP Dashboard</h1>
               <p className="text-gray-600">Manage your shifts, credentials, and training</p>
             </div>
-            <Button className="bg-medical-blue hover:bg-blue-800">
+            <Button 
+              className="bg-medical-blue hover:bg-blue-800"
+              onClick={() => navigate('/shifts')}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Browse Shifts
             </Button>
