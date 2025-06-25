@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ import JobFairManager from '@/components/JobFairManager';
 const CountyDashboard = () => {
   const { toast } = useToast();
   
-  const [stats] = useState({
+  const stats = {
     totalDSPs: 156,
     pendingApprovals: 12,
     activeDSPs: 144,
@@ -23,7 +22,7 @@ const CountyDashboard = () => {
     totalShifts: 2847,
     credentialIssues: 23,
     complianceRate: 94.2
-  });
+  };
 
   const handleGenerateReport = () => {
     console.log('Generate Report clicked');
