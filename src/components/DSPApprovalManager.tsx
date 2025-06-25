@@ -9,13 +9,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, XCircle, Flag, AlertTriangle, Eye, Search, Filter } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface DSP {
+  id: number;
+  name: string;
+  email: string;
+  facility: string;
+  applicationDate: string;
+  status: 'pending' | 'approved' | 'rejected';
+  experience: string;
+  certifications: string[];
+  background: string;
+  flagged: boolean;
+  flagReason: string | null;
+}
 
 const DSPApprovalManager = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedDSP, setSelectedDSP] = useState<any>(null);
+  const [selectedDSP, setSelectedDSP] = useState<DSP | null>(null);
+  const [flagReason, setFlagReason] = useState('');
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
 
-  const dsps = [
+  const [dsps, setDSPs] = useState<DSP[]>([
     {
       id: 1,
       name: 'Sarah Johnson',
@@ -48,7 +66,7 @@ const DSPApprovalManager = () => {
       email: 'robert.smith@email.com',
       facility: 'Maple Heights',
       applicationDate: '2024-05-20',
-      status: 'flagged',
+      status: 'pending',
       experience: '1 year',
       certifications: ['Basic DSP Training'],
       background: 'pending',
@@ -68,7 +86,7 @@ const DSPApprovalManager = () => {
       flagged: false,
       flagReason: null
     }
-  ];
+  ]);
 
   const getStatusBadge = (status: string, flagged: boolean) => {
     if (flagged) {
@@ -98,18 +116,65 @@ const DSPApprovalManager = () => {
   });
 
   const handleApprove = (dspId: number) => {
-    console.log('Approving DSP:', dspId);
-    // Handle approval logic
+    setDSPs(prev => prev.map(dsp => 
+      dsp.id === dspId 
+        ? { ...dsp, status: 'approved' as const, flagged: false, flagReason: null }
+        : dsp
+    ));
+
+    const dsp = dsps.find(d => d.id === dspId);
+    toast({
+      title: "DSP Approved",
+      description: `${dsp?.name} has been approved successfully.`,
+      className: "bg-green-50 border-green-200",
+    });
+
+    setSelectedDSP(null);
   };
 
   const handleReject = (dspId: number) => {
-    console.log('Rejecting DSP:', dspId);
-    // Handle rejection logic
+    setDSPs(prev => prev.map(dsp => 
+      dsp.id === dspId 
+        ? { ...dsp, status: 'rejected' as const, flagged: false, flagReason: null }
+        : dsp
+    ));
+
+    const dsp = dsps.find(d => d.id === dspId);
+    toast({
+      title: "DSP Rejected",
+      description: `${dsp?.name}'s application has been rejected.`,
+      variant: "destructive",
+    });
+
+    setSelectedDSP(null);
   };
 
   const handleFlag = (dspId: number, reason: string) => {
-    console.log('Flagging DSP:', dspId, 'Reason:', reason);
-    // Handle flagging logic
+    if (!reason.trim()) {
+      toast({
+        title: "Flag Reason Required",
+        description: "Please provide a reason for flagging this DSP.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDSPs(prev => prev.map(dsp => 
+      dsp.id === dspId 
+        ? { ...dsp, flagged: true, flagReason: reason }
+        : dsp
+    ));
+
+    const dsp = dsps.find(d => d.id === dspId);
+    toast({
+      title: "DSP Flagged",
+      description: `${dsp?.name} has been flagged for review.`,
+      className: "bg-yellow-50 border-yellow-200",
+    });
+
+    setFlagReason('');
+    setShowFlagDialog(false);
+    setSelectedDSP(null);
   };
 
   return (
@@ -276,28 +341,75 @@ const DSPApprovalManager = () => {
                                     ))}
                                   </div>
                                 </div>
+                                {selectedDSP.flagged && selectedDSP.flagReason && (
+                                  <div>
+                                    <label className="text-sm font-medium text-red-600">Flag Reason</label>
+                                    <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{selectedDSP.flagReason}</p>
+                                  </div>
+                                )}
                                 <div className="flex gap-2 pt-4">
-                                  <Button 
-                                    onClick={() => handleApprove(selectedDSP.id)}
-                                    className="bg-green-600 hover:bg-green-700"
-                                  >
-                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                    Approve
-                                  </Button>
-                                  <Button 
-                                    variant="destructive"
-                                    onClick={() => handleReject(selectedDSP.id)}
-                                  >
-                                    <XCircle className="w-4 h-4 mr-2" />
-                                    Reject
-                                  </Button>
-                                  <Button 
-                                    variant="outline"
-                                    onClick={() => handleFlag(selectedDSP.id, 'Manual review required')}
-                                  >
-                                    <Flag className="w-4 h-4 mr-2" />
-                                    Flag
-                                  </Button>
+                                  {selectedDSP.status !== 'approved' && (
+                                    <Button 
+                                      onClick={() => handleApprove(selectedDSP.id)}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      <CheckCircle className="w-4 h-4 mr-2" />
+                                      Approve
+                                    </Button>
+                                  )}
+                                  {selectedDSP.status !== 'rejected' && (
+                                    <Button 
+                                      variant="destructive"
+                                      onClick={() => handleReject(selectedDSP.id)}
+                                    >
+                                      <XCircle className="w-4 h-4 mr-2" />
+                                      Reject
+                                    </Button>
+                                  )}
+                                  <Dialog open={showFlagDialog} onOpenChange={setShowFlagDialog}>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline">
+                                        <Flag className="w-4 h-4 mr-2" />
+                                        Flag
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Flag DSP Application</DialogTitle>
+                                        <DialogDescription>
+                                          Provide a reason for flagging {selectedDSP.name}'s application
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <div className="space-y-4">
+                                        <div>
+                                          <label className="text-sm font-medium">Flag Reason</label>
+                                          <Textarea
+                                            placeholder="Enter reason for flagging this application..."
+                                            value={flagReason}
+                                            onChange={(e) => setFlagReason(e.target.value)}
+                                            rows={3}
+                                          />
+                                        </div>
+                                        <div className="flex justify-end gap-2">
+                                          <Button 
+                                            variant="outline" 
+                                            onClick={() => {
+                                              setShowFlagDialog(false);
+                                              setFlagReason('');
+                                            }}
+                                          >
+                                            Cancel
+                                          </Button>
+                                          <Button 
+                                            variant="destructive"
+                                            onClick={() => handleFlag(selectedDSP.id, flagReason)}
+                                          >
+                                            Flag Application
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
                                 </div>
                               </div>
                             )}
