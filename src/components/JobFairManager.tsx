@@ -9,8 +9,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, MapPin, Users, Plus, Eye, Edit, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const JobFairManager = () => {
+  const { toast } = useToast();
   const [jobFairs, setJobFairs] = useState([
     {
       id: 1,
@@ -48,6 +50,10 @@ const JobFairManager = () => {
   ]);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedJobFair, setSelectedJobFair] = useState<any>(null);
+  const [editingJobFair, setEditingJobFair] = useState<any>(null);
   const [newJobFair, setNewJobFair] = useState({
     title: '',
     date: '',
@@ -75,6 +81,38 @@ const JobFairManager = () => {
       expectedAttendees: ''
     });
     setIsCreateDialogOpen(false);
+    toast({
+      title: "Job Fair Created",
+      description: "New job fair has been successfully created.",
+    });
+  };
+
+  const handleViewJobFair = (jobFair: any) => {
+    setSelectedJobFair(jobFair);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleEditJobFair = (jobFair: any) => {
+    setEditingJobFair({
+      ...jobFair,
+      expectedAttendees: jobFair.expectedAttendees.toString()
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateJobFair = () => {
+    const updatedJobFairs = jobFairs.map(jf => 
+      jf.id === editingJobFair.id 
+        ? { ...editingJobFair, expectedAttendees: parseInt(editingJobFair.expectedAttendees) || 0 }
+        : jf
+    );
+    setJobFairs(updatedJobFairs);
+    setIsEditDialogOpen(false);
+    setEditingJobFair(null);
+    toast({
+      title: "Job Fair Updated",
+      description: "Job fair details have been successfully updated.",
+    });
   };
 
   const getStatusBadge = (status: string, date: string) => {
@@ -287,11 +325,19 @@ const JobFairManager = () => {
                     <TableCell>{jobFair.expectedAttendees}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewJobFair(jobFair)}
+                        >
                           <Eye className="w-4 h-4 mr-1" />
                           View
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditJobFair(jobFair)}
+                        >
                           <Edit className="w-4 h-4 mr-1" />
                           Edit
                         </Button>
@@ -304,6 +350,161 @@ const JobFairManager = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* View Job Fair Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Job Fair Details</DialogTitle>
+            <DialogDescription>
+              View complete information about this job fair event
+            </DialogDescription>
+          </DialogHeader>
+          {selectedJobFair && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold">{selectedJobFair.title}</h3>
+                {getStatusBadge(selectedJobFair.status, selectedJobFair.date)}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-blue-500" />
+                    <div>
+                      <p className="font-medium">Date & Time</p>
+                      <p className="text-gray-600">{selectedJobFair.date} at {selectedJobFair.time}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-5 h-5 text-green-500" />
+                    <div>
+                      <p className="font-medium">Location</p>
+                      <p className="text-gray-600">{selectedJobFair.location}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Users className="w-5 h-5 text-purple-500" />
+                    <div>
+                      <p className="font-medium">Registered Employers</p>
+                      <p className="text-gray-600">{selectedJobFair.registeredEmployers} companies</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Users className="w-5 h-5 text-orange-500" />
+                    <div>
+                      <p className="font-medium">Expected Attendees</p>
+                      <p className="text-gray-600">{selectedJobFair.expectedAttendees} people</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <p className="font-medium mb-2">Description</p>
+                <p className="text-gray-600 leading-relaxed">{selectedJobFair.description}</p>
+              </div>
+              
+              <div className="flex justify-end pt-4">
+                <Button onClick={() => setIsViewDialogOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Job Fair Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Job Fair</DialogTitle>
+            <DialogDescription>
+              Update job fair event details
+            </DialogDescription>
+          </DialogHeader>
+          {editingJobFair && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-title">Event Title</Label>
+                <Input
+                  id="edit-title"
+                  value={editingJobFair.title}
+                  onChange={(e) => setEditingJobFair({...editingJobFair, title: e.target.value})}
+                  placeholder="e.g., Summer Healthcare Job Fair"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="edit-date">Date</Label>
+                  <Input
+                    id="edit-date"
+                    type="date"
+                    value={editingJobFair.date}
+                    onChange={(e) => setEditingJobFair({...editingJobFair, date: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-time">Time</Label>
+                  <Input
+                    id="edit-time"
+                    value={editingJobFair.time}
+                    onChange={(e) => setEditingJobFair({...editingJobFair, time: e.target.value})}
+                    placeholder="e.g., 10:00 AM - 4:00 PM"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-location">Location</Label>
+                <Input
+                  id="edit-location"
+                  value={editingJobFair.location}
+                  onChange={(e) => setEditingJobFair({...editingJobFair, location: e.target.value})}
+                  placeholder="e.g., County Convention Center"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-expectedAttendees">Expected Attendees</Label>
+                <Input
+                  id="edit-expectedAttendees"
+                  type="number"
+                  value={editingJobFair.expectedAttendees}
+                  onChange={(e) => setEditingJobFair({...editingJobFair, expectedAttendees: e.target.value})}
+                  placeholder="e.g., 200"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editingJobFair.description}
+                  onChange={(e) => setEditingJobFair({...editingJobFair, description: e.target.value})}
+                  placeholder="Brief description of the event..."
+                  rows={3}
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button onClick={handleUpdateJobFair} className="flex-1">
+                  Update Event
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditDialogOpen(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
