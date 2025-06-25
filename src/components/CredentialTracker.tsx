@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,8 @@ import { Calendar, CheckCircle, Clock, AlertTriangle, Plus, Search, Filter, Down
 import { useToast } from '@/hooks/use-toast';
 import CredentialForm from './CredentialForm';
 import CredentialDetails from './CredentialDetails';
+import CredentialEditForm from './CredentialEditForm';
+import DocumentUploadModal from './DocumentUploadModal';
 
 interface CredentialItem {
   id: string;
@@ -76,6 +79,8 @@ const CredentialTracker = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCredentialForm, setShowCredentialForm] = useState(false);
   const [showCredentialDetails, setShowCredentialDetails] = useState(false);
+  const [showCredentialEditForm, setShowCredentialEditForm] = useState(false);
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState<CredentialItem | null>(null);
 
   const getStatusBadge = (status: string) => {
@@ -108,7 +113,6 @@ const CredentialTracker = () => {
     }
   };
 
-  // Updated button handlers
   const handleAddCredential = () => {
     console.log('Opening credential form');
     setShowCredentialForm(true);
@@ -130,26 +134,42 @@ const CredentialTracker = () => {
 
   const handleEditCredential = (credentialId: string) => {
     console.log('Edit credential:', credentialId);
-    toast({
-      title: "Edit Credential",
-      description: "Credential editing functionality coming soon...",
-    });
+    const credential = credentials.find(c => c.id === credentialId);
+    if (credential) {
+      setSelectedCredential(credential);
+      setShowCredentialEditForm(true);
+    }
+  };
+
+  const handleCredentialUpdated = (updatedCredential: CredentialItem) => {
+    setCredentials(prev => 
+      prev.map(c => 
+        c.id === updatedCredential.id ? updatedCredential : c
+      )
+    );
+    console.log('Credential updated:', updatedCredential);
   };
 
   const handleUploadDocument = (credentialId: string) => {
     console.log('Upload document for credential:', credentialId);
-    // Update attachment count for demo purposes
-    setCredentials(prev => 
-      prev.map(c => 
-        c.id === credentialId 
-          ? { ...c, attachments: c.attachments + 1 }
-          : c
-      )
-    );
-    toast({
-      title: "Document Uploaded",
-      description: "Document has been successfully attached to the credential.",
-    });
+    const credential = credentials.find(c => c.id === credentialId);
+    if (credential) {
+      setSelectedCredential(credential);
+      setShowDocumentUpload(true);
+    }
+  };
+
+  const handleDocumentUploaded = () => {
+    if (selectedCredential) {
+      // Update attachment count for the selected credential
+      setCredentials(prev => 
+        prev.map(c => 
+          c.id === selectedCredential.id 
+            ? { ...c, attachments: c.attachments + 1 }
+            : c
+        )
+      );
+    }
   };
 
   const handleDownloadReport = () => {
@@ -361,6 +381,20 @@ const CredentialTracker = () => {
         onEdit={handleEditCredential}
         onUploadDocument={handleUploadDocument}
         onRenew={handleRenewCredential}
+      />
+
+      <CredentialEditForm
+        credential={selectedCredential}
+        open={showCredentialEditForm}
+        onOpenChange={setShowCredentialEditForm}
+        onCredentialUpdated={handleCredentialUpdated}
+      />
+
+      <DocumentUploadModal
+        credentialName={selectedCredential?.name || ''}
+        open={showDocumentUpload}
+        onOpenChange={setShowDocumentUpload}
+        onDocumentUploaded={handleDocumentUploaded}
       />
     </div>
   );
