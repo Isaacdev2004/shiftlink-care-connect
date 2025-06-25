@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, DollarSign, TrendingUp, AlertTriangle, Settings } from 'lucide-react';
 import AdminCommissionManager from '@/components/AdminCommissionManager';
+import PlatformSettingsDialog from '@/components/PlatformSettingsDialog';
 
 const AdminDashboard = () => {
   const [stats] = useState({
@@ -28,10 +29,12 @@ const AdminDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
               <p className="text-gray-600">Platform administration and commission management</p>
             </div>
-            <Button className="bg-medical-blue hover:bg-blue-800">
-              <Settings className="w-4 h-4 mr-2" />
-              Platform Settings
-            </Button>
+            <PlatformSettingsDialog>
+              <Button className="bg-medical-blue hover:bg-blue-800">
+                <Settings className="w-4 h-4 mr-2" />
+                Platform Settings
+              </Button>
+            </PlatformSettingsDialog>
           </div>
         </div>
       </div>
