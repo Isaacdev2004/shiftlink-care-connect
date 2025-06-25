@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, User, Mail, Phone, MapPin, Building, Award, Save, X, Plus } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface ProfileData {
   id?: string;
@@ -114,6 +114,8 @@ const ProfileManager = ({ userType, existingProfile, onSave, onCancel, isEditing
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newCertification, setNewCertification] = useState('');
   const [newSkill, setNewSkill] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (existingProfile) {
@@ -214,19 +216,69 @@ const ProfileManager = ({ userType, existingProfile, onSave, onCancel, isEditing
     return titles[userType];
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setProfileImage(result);
+        toast({
+          title: "Success",
+          description: "Profile image uploaded successfully"
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   const renderPersonalInfoTab = () => (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
         <Avatar className="w-20 h-20">
-          <AvatarImage src="/placeholder.svg" />
+          <AvatarImage src={profileImage || "/placeholder.svg"} />
           <AvatarFallback className="text-lg">
             {profile.personalInfo.firstName[0]}{profile.personalInfo.lastName[0]}
           </AvatarFallback>
         </Avatar>
-        <Button variant="outline" size="sm">
-          <Upload className="w-4 h-4 mr-2" />
-          Upload Photo
-        </Button>
+        <div className="space-y-2">
+          <Button variant="outline" size="sm" onClick={triggerFileUpload}>
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Photo
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <p className="text-xs text-gray-500">Max size: 5MB. Formats: JPG, PNG, GIF</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
