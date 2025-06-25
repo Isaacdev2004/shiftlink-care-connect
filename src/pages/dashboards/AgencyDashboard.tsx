@@ -5,15 +5,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, Users, Calendar, MessageSquare, BarChart3, Plus } from 'lucide-react';
 import ShiftPosting from '@/components/ShiftPosting';
+import PostedShiftsList, { PostedShift } from '@/components/PostedShiftsList';
 import MessagingSystem from '@/components/MessagingSystem';
 
 const AgencyDashboard = () => {
-  const [stats] = useState({
+  const [stats, setStats] = useState({
     totalShifts: 45,
     activeDSPs: 28,
     pendingApplications: 12,
     thisMonthHours: 1240
   });
+
+  const [postedShifts, setPostedShifts] = useState<PostedShift[]>([]);
+  const [showShiftForm, setShowShiftForm] = useState(false);
+
+  const handleShiftPosted = (shiftData: any) => {
+    const newShift: PostedShift = {
+      id: Date.now().toString(),
+      ...shiftData,
+      status: 'active' as const,
+      applicationsCount: 0,
+      createdAt: new Date().toISOString()
+    };
+    
+    setPostedShifts(prev => [newShift, ...prev]);
+    setStats(prev => ({
+      ...prev,
+      totalShifts: prev.totalShifts + 1
+    }));
+    setShowShiftForm(false);
+  };
+
+  const handleDeleteShift = (shiftId: string) => {
+    setPostedShifts(prev => prev.filter(shift => shift.id !== shiftId));
+    setStats(prev => ({
+      ...prev,
+      totalShifts: Math.max(0, prev.totalShifts - 1)
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,7 +57,10 @@ const AgencyDashboard = () => {
               <h1 className="text-lg font-bold text-medical-blue">ShiftLink Agency</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Button className="bg-medical-blue hover:bg-blue-800">
+              <Button 
+                className="bg-medical-blue hover:bg-blue-800"
+                onClick={() => setShowShiftForm(true)}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Post New Shift
               </Button>
@@ -107,7 +139,37 @@ const AgencyDashboard = () => {
           </TabsList>
 
           <TabsContent value="shifts" className="space-y-6">
-            <ShiftPosting />
+            {showShiftForm ? (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Post New Shift</h3>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowShiftForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                <ShiftPosting onShiftPosted={handleShiftPosted} />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Manage Your Shifts</h3>
+                  <Button 
+                    className="bg-medical-blue hover:bg-blue-800"
+                    onClick={() => setShowShiftForm(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Post New Shift
+                  </Button>
+                </div>
+                <PostedShiftsList 
+                  shifts={postedShifts}
+                  onDeleteShift={handleDeleteShift}
+                />
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="dsps" className="space-y-6">

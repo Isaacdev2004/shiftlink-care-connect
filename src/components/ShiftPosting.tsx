@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Clock, MapPin, DollarSign, Users } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ShiftData {
   title: string;
@@ -23,7 +23,12 @@ interface ShiftData {
   specialRequirements: string;
 }
 
-const ShiftPosting = () => {
+interface ShiftPostingProps {
+  onShiftPosted?: (shiftData: ShiftData) => void;
+}
+
+const ShiftPosting = ({ onShiftPosted }: ShiftPostingProps) => {
+  const { toast } = useToast();
   const [shiftData, setShiftData] = useState<ShiftData>({
     title: '',
     clientName: '',
@@ -76,7 +81,30 @@ const ShiftPosting = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Shift posted:', shiftData);
-    alert('Shift posted successfully! DSPs will be notified based on matching criteria.');
+    
+    toast({
+      title: "Shift Posted Successfully!",
+      description: `"${shiftData.title}" has been posted and DSPs will be notified.`,
+    });
+
+    // Call the callback if provided
+    onShiftPosted?.(shiftData);
+
+    // Reset form
+    setShiftData({
+      title: '',
+      clientName: '',
+      date: '',
+      startTime: '',
+      endTime: '',
+      location: '',
+      address: '',
+      hourlyRate: '',
+      shiftType: '',
+      requiredCredentials: [],
+      description: '',
+      specialRequirements: ''
+    });
   };
 
   return (
