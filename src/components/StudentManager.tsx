@@ -7,11 +7,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Users, Mail, Phone, Calendar, Search, UserPlus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Users, Mail, Phone, Calendar, Search, UserPlus, Edit } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Student {
   id: string;
+  courseId: string;
   name: string;
   email: string;
   phone: string;
@@ -23,39 +25,23 @@ interface Student {
 interface StudentManagerProps {
   courseId: string;
   courseName: string;
+  students: Student[];
+  onStudentsChange: (students: Student[]) => void;
 }
 
-const StudentManager = ({ courseId, courseName }: StudentManagerProps) => {
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: '1',
-      name: 'John Smith',
-      email: 'john.smith@email.com',
-      phone: '(555) 123-4567',
-      enrolledDate: '2024-06-01',
-      status: 'enrolled',
-      progress: 75
-    },
-    {
-      id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah.j@email.com',
-      phone: '(555) 987-6543',
-      enrolledDate: '2024-06-02',
-      status: 'completed',
-      progress: 100
-    }
-  ]);
-
+const StudentManager = ({ courseId, courseName, students, onStudentsChange }: StudentManagerProps) => {
+  const courseStudents = students.filter(student => student.courseId === courseId);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [newStudent, setNewStudent] = useState({
     name: '',
     email: '',
     phone: ''
   });
 
-  const filteredStudents = students.filter(student =>
+  const filteredStudents = courseStudents.filter(student =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -72,19 +58,42 @@ const StudentManager = ({ courseId, courseName }: StudentManagerProps) => {
 
     const student: Student = {
       id: Date.now().toString(),
+      courseId,
       ...newStudent,
       enrolledDate: new Date().toISOString().split('T')[0],
       status: 'enrolled',
       progress: 0
     };
 
-    setStudents(prev => [...prev, student]);
+    onStudentsChange([...students, student]);
     setNewStudent({ name: '', email: '', phone: '' });
     setShowAddDialog(false);
     toast({
       title: "Success",
       description: "Student added successfully"
     });
+  };
+
+  const handleUpdateStudent = (studentId: string, updates: Partial<Student>) => {
+    const updatedStudents = students.map(student =>
+      student.id === studentId ? { ...student, ...updates } : student
+    );
+    onStudentsChange(updatedStudents);
+    toast({
+      title: "Success",
+      description: "Student updated successfully"
+    });
+  };
+
+  const handleRemoveStudent = (studentId: string) => {
+    if (window.confirm('Are you sure you want to remove this student from the course?')) {
+      const updatedStudents = students.filter(student => student.id !== studentId);
+      onStudentsChange(updatedStudents);
+      toast({
+        title: "Success",
+        description: "Student removed successfully"
+      });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -110,7 +119,7 @@ const StudentManager = ({ courseId, courseName }: StudentManagerProps) => {
               <span>Students - {courseName}</span>
             </CardTitle>
             <p className="text-sm text-gray-600 mt-1">
-              {students.length} total students • {students.filter(s => s.status === 'enrolled').length} active
+              {courseStudents.length} total students • {courseStudents.filter(s => s.status === 'enrolled').length} active
             </p>
           </div>
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -187,6 +196,7 @@ const StudentManager = ({ courseId, courseName }: StudentManagerProps) => {
                 <TableHead>Enrolled</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Progress</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -213,17 +223,51 @@ const StudentManager = ({ courseId, courseName }: StudentManagerProps) => {
                       <span>{student.enrolledDate}</span>
                     </div>
                   </TableCell>
-                  <TableCell>{getStatusBadge(student.status)}</TableCell>
+                  <TableCell>
+                    <Select 
+                      value={student.status} 
+                      onValueChange={(value: 'enrolled' | 'completed' | 'dropped') => 
+                        handleUpdateStudent(student.id, { status: value })
+                      }
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="enrolled">Enrolled</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="dropped">Dropped</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 max-w-[80px]">
                         <div 
                           className="bg-blue-600 h-2 rounded-full" 
                           style={{ width: `${student.progress}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm font-medium">{student.progress}%</span>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={student.progress}
+                        onChange={(e) => handleUpdateStudent(student.id, { progress: parseInt(e.target.value) || 0 })}
+                        className="w-16 h-8 text-xs"
+                      />
+                      <span className="text-xs">%</span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveStudent(student.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      Remove
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

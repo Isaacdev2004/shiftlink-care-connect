@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +24,17 @@ interface Course {
   status: string;
   rating: number;
   reviews: number;
+}
+
+interface Student {
+  id: string;
+  courseId: string;
+  name: string;
+  email: string;
+  phone: string;
+  enrolledDate: string;
+  status: 'enrolled' | 'completed' | 'dropped';
+  progress: number;
 }
 
 const TrainerDashboard = () => {
@@ -59,6 +69,29 @@ const TrainerDashboard = () => {
     }
   ]);
 
+  const [students, setStudents] = useState<Student[]>([
+    {
+      id: '1',
+      courseId: '1',
+      name: 'John Smith',
+      email: 'john.smith@email.com',
+      phone: '(555) 123-4567',
+      enrolledDate: '2024-06-01',
+      status: 'enrolled',
+      progress: 75
+    },
+    {
+      id: '2',
+      courseId: '1',
+      name: 'Sarah Johnson',
+      email: 'sarah.j@email.com',
+      phone: '(555) 987-6543',
+      enrolledDate: '2024-06-02',
+      status: 'completed',
+      progress: 100
+    }
+  ]);
+
   const [showCreateCourseDialog, setShowCreateCourseDialog] = useState(false);
 
   const [stats] = useState({
@@ -85,6 +118,20 @@ const TrainerDashboard = () => {
       title: "Success",
       description: "Course created successfully"
     });
+  };
+
+  const handleStudentsChange = (updatedStudents: Student[]) => {
+    setStudents(updatedStudents);
+    
+    // Update course enrollment counts
+    const updatedCourses = courses.map(course => {
+      const courseStudents = updatedStudents.filter(student => student.courseId === course.id);
+      return {
+        ...course,
+        enrolled: courseStudents.length
+      };
+    });
+    setCourses(updatedCourses);
   };
 
   return (
@@ -128,7 +175,7 @@ const TrainerDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Students</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.totalStudents}</p>
+                  <p className="text-2xl font-bold text-blue-600">{students.length}</p>
                 </div>
                 <Users className="w-8 h-8 text-blue-500" />
               </div>
@@ -173,6 +220,8 @@ const TrainerDashboard = () => {
             <CourseManager 
               courses={courses} 
               onCoursesChange={setCourses}
+              students={students}
+              onStudentsChange={handleStudentsChange}
             />
           </TabsContent>
 
@@ -191,9 +240,37 @@ const TrainerDashboard = () => {
                 <CardDescription>View and manage your students across all courses</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Student management features coming soon</p>
+                <div className="space-y-4">
+                  {courses.map(course => (
+                    <div key={course.id} className="border rounded-lg p-4">
+                      <h4 className="font-semibold mb-2">{course.title}</h4>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {students.filter(s => s.courseId === course.id).length} students enrolled
+                      </p>
+                      <div className="space-y-2">
+                        {students
+                          .filter(student => student.courseId === course.id)
+                          .map(student => (
+                            <div key={student.id} className="flex justify-between items-center bg-gray-50 p-2 rounded">
+                              <div>
+                                <p className="font-medium">{student.name}</p>
+                                <p className="text-sm text-gray-600">{student.email}</p>
+                              </div>
+                              <div className="text-right">
+                                <Badge className={
+                                  student.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  student.status === 'enrolled' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-red-100 text-red-800'
+                                }>
+                                  {student.status}
+                                </Badge>
+                                <p className="text-sm text-gray-600 mt-1">{student.progress}% complete</p>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
