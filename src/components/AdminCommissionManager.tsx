@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DollarSign, TrendingUp, Users, Search, Filter, Download, Eye, Edit } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface Transaction {
   id: string;
@@ -38,8 +40,11 @@ const AdminCommissionManager = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('current-month');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [editingTrainer, setEditingTrainer] = useState<TrainerCommission | null>(null);
+  const [newCommissionRate, setNewCommissionRate] = useState<number>(0);
 
-  const [transactions] = useState<Transaction[]>([
+  const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: '1',
       trainerName: 'Dr. Sarah Johnson',
@@ -81,7 +86,7 @@ const AdminCommissionManager = () => {
     }
   ]);
 
-  const [trainersCommission] = useState<TrainerCommission[]>([
+  const [trainersCommission, setTrainersCommission] = useState<TrainerCommission[]>([
     {
       trainerId: '1',
       trainerName: 'Dr. Sarah Johnson',
@@ -110,6 +115,113 @@ const AdminCommissionManager = () => {
     .filter(t => t.status === 'pending')
     .reduce((sum, t) => sum + t.commissionAmount, 0);
 
+  const handleExportReport = () => {
+    const csvData = [
+      ['Transaction ID', 'Trainer', 'Course', 'Student', 'Price', 'Commission Rate', 'Commission Amount', 'Date', 'Status'],
+      ...transactions.map(t => [
+        t.id,
+        t.trainerName,
+        t.courseName,
+        t.studentName,
+        t.coursePrice.toString(),
+        `${t.commissionRate}%`,
+        t.commissionAmount.toString(),
+        t.date,
+        t.status
+      ])
+    ];
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `commission-report-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export Successful",
+      description: "Commission report has been downloaded as CSV file."
+    });
+  };
+
+  const handleProcessPayments = () => {
+    const pendingTransactions = transactions.filter(t => t.status === 'pending');
+    
+    if (pendingTransactions.length === 0) {
+      toast({
+        title: "No Pending Payments",
+        description: "There are no pending payments to process."
+      });
+      return;
+    }
+
+    // Update pending transactions to processed
+    const updatedTransactions = transactions.map(t => 
+      t.status === 'pending' ? { ...t, status: 'processed' as const } : t
+    );
+    setTransactions(updatedTransactions);
+
+    toast({
+      title: "Payments Processed",
+      description: `Successfully processed ${pendingTransactions.length} pending payment(s). Total amount: $${pendingTransactions.reduce((sum, t) => sum + t.commissionAmount, 0).toFixed(2)}`
+    });
+  };
+
+  const handleViewTransaction = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+  };
+
+  const handleEditRate = (trainer: TrainerCommission) => {
+    setEditingTrainer(trainer);
+    setNewCommissionRate(trainer.commissionRate);
+  };
+
+  const handleSaveCommissionRate = () => {
+    if (!editingTrainer) return;
+
+    if (newCommissionRate < 10 || newCommissionRate > 20) {
+      toast({
+        title: "Invalid Rate",
+        description: "Commission rate must be between 10% and 20%.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Update trainer commission rate
+    const updatedTrainers = trainersCommission.map(trainer =>
+      trainer.trainerId === editingTrainer.trainerId
+        ? { ...trainer, commissionRate: newCommissionRate }
+        : trainer
+    );
+    setTrainersCommission(updatedTrainers);
+
+    // Update related transactions
+    const updatedTransactions = transactions.map(transaction =>
+      transaction.trainerName === editingTrainer.trainerName
+        ? {
+            ...transaction,
+            commissionRate: newCommissionRate,
+            commissionAmount: (transaction.coursePrice * newCommissionRate) / 100,
+            platformFee: (transaction.coursePrice * newCommissionRate) / 100,
+            trainerEarnings: transaction.coursePrice - ((transaction.coursePrice * newCommissionRate) / 100)
+          }
+        : transaction
+    );
+    setTransactions(updatedTransactions);
+
+    setEditingTrainer(null);
+
+    toast({
+      title: "Rate Updated",
+      description: `Commission rate for ${editingTrainer.trainerName} updated to ${newCommissionRate}%`
+    });
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
@@ -132,11 +244,6 @@ const AdminCommissionManager = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleCommissionRateChange = (trainerId: string, newRate: number) => {
-    console.log(`Updating commission rate for trainer ${trainerId} to ${newRate}%`);
-    // This would update the trainer's commission rate in the database
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -145,11 +252,11 @@ const AdminCommissionManager = () => {
           <p className="text-gray-600">Monitor and manage platform commission rates (10-20%)</p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExportReport}>
             <Download className="w-4 h-4 mr-2" />
             Export Report
           </Button>
-          <Button className="bg-medical-blue hover:bg-blue-800">
+          <Button className="bg-medical-blue hover:bg-blue-800" onClick={handleProcessPayments}>
             Process Payments
           </Button>
         </div>
@@ -285,7 +392,7 @@ const AdminCommissionManager = () => {
                     <p className="text-sm text-gray-600">Commission Rate</p>
                     <p className="text-lg font-bold">{trainer.commissionRate}%</p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleEditRate(trainer)}>
                     <Edit className="w-4 h-4 mr-2" />
                     Edit Rate
                   </Button>
@@ -324,7 +431,7 @@ const AdminCommissionManager = () => {
                     </div>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => handleViewTransaction(transaction)}>
                   <Eye className="w-4 h-4" />
                 </Button>
               </div>
@@ -332,6 +439,79 @@ const AdminCommissionManager = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Transaction Details Dialog */}
+      <Dialog open={!!selectedTransaction} onOpenChange={() => setSelectedTransaction(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Transaction Details</DialogTitle>
+            <DialogDescription>
+              Detailed information for transaction #{selectedTransaction?.id}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTransaction && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Course Information</h4>
+                  <p><strong>Course:</strong> {selectedTransaction.courseName}</p>
+                  <p><strong>Trainer:</strong> {selectedTransaction.trainerName}</p>
+                  <p><strong>Student:</strong> {selectedTransaction.studentName}</p>
+                  <p><strong>Date:</strong> {selectedTransaction.date}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2">Financial Breakdown</h4>
+                  <p><strong>Course Price:</strong> ${selectedTransaction.coursePrice.toFixed(2)}</p>
+                  <p><strong>Commission Rate:</strong> {selectedTransaction.commissionRate}%</p>
+                  <p><strong>Platform Commission:</strong> ${selectedTransaction.commissionAmount.toFixed(2)}</p>
+                  <p><strong>Trainer Earnings:</strong> ${selectedTransaction.trainerEarnings.toFixed(2)}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div>
+                  <strong>Status:</strong> {getStatusBadge(selectedTransaction.status)}
+                </div>
+                <Button onClick={() => setSelectedTransaction(null)}>Close</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Commission Rate Dialog */}
+      <Dialog open={!!editingTrainer} onOpenChange={() => setEditingTrainer(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Commission Rate</DialogTitle>
+            <DialogDescription>
+              Update commission rate for {editingTrainer?.trainerName} (must be between 10% and 20%)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="commission-rate">Commission Rate (%)</Label>
+              <Input
+                id="commission-rate"
+                type="number"
+                min="10"
+                max="20"
+                value={newCommissionRate}
+                onChange={(e) => setNewCommissionRate(Number(e.target.value))}
+                placeholder="Enter commission rate"
+              />
+              <p className="text-sm text-gray-500 mt-1">Rate must be between 10% and 20%</p>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setEditingTrainer(null)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveCommissionRate}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
