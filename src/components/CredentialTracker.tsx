@@ -1,415 +1,336 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Bell, 
-  BellOff, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  Calendar,
-  Mail,
-  MessageSquare,
-  Settings,
-  Plus,
-  Trash2
-} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, CheckCircle, Clock, AlertTriangle, Plus, Search, Filter, Download, Upload, Eye, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface CredentialNotificationSettings {
-  email: boolean;
-  sms: boolean;
-  inApp: boolean;
-  reminderDays: number[];
-}
-
-interface EnhancedCredential {
+interface CredentialItem {
   id: string;
   name: string;
-  type: 'certification' | 'license' | 'training' | 'background_check';
+  type: 'certification' | 'license' | 'training';
   issuer: string;
   issueDate: string;
   expiryDate: string;
-  status: 'valid' | 'expiring_soon' | 'expired' | 'renewal_pending';
-  daysUntilExpiry: number;
-  criticality: 'low' | 'medium' | 'high' | 'critical';
-  renewalUrl?: string;
-  documentUrl?: string;
-  notificationsSent: string[];
-  autoRenewal: boolean;
-  nextReminderDate?: string;
+  status: 'active' | 'expiring_soon' | 'expired' | 'pending_renewal';
+  progress: number;
+  attachments: number;
 }
 
 const CredentialTracker = () => {
   const { toast } = useToast();
-  const [credentials, setCredentials] = useState<EnhancedCredential[]>([
+  
+  const [credentials] = useState<CredentialItem[]>([
     {
       id: '1',
       name: 'CPR Certification',
       type: 'certification',
-      issuer: 'American Heart Association',
-      issueDate: '2024-01-15',
-      expiryDate: '2024-07-15',
-      status: 'expiring_soon',
-      daysUntilExpiry: 12,
-      criticality: 'critical',
-      renewalUrl: 'https://cpr.heart.org/renew',
-      notificationsSent: ['30-day', '14-day'],
-      autoRenewal: false
+      issuer: 'American Red Cross',
+      issueDate: '2023-06-15',
+      expiryDate: '2024-12-15',
+      status: 'active',
+      progress: 100,
+      attachments: 2
     },
     {
       id: '2',
       name: 'First Aid Certification',
       type: 'certification',
-      issuer: 'Red Cross',
-      issueDate: '2024-01-20',
+      issuer: 'American Red Cross',
+      issueDate: '2023-01-20',
       expiryDate: '2024-07-20',
       status: 'expiring_soon',
-      daysUntilExpiry: 17,
-      criticality: 'high',
-      notificationsSent: ['30-day'],
-      autoRenewal: true
+      progress: 85,
+      attachments: 1
     },
     {
       id: '3',
       name: 'Background Check',
-      type: 'background_check',
-      issuer: 'DOJ California',
+      type: 'license',
+      issuer: 'State Department',
       issueDate: '2023-05-01',
       expiryDate: '2024-05-01',
       status: 'expired',
-      daysUntilExpiry: -54,
-      criticality: 'critical',
-      notificationsSent: ['30-day', '14-day', '7-day', 'expired'],
-      autoRenewal: false
+      progress: 0,
+      attachments: 3
     },
     {
       id: '4',
-      name: 'Medication Administration',
+      name: 'Medication Administration Training',
       type: 'training',
-      issuer: 'State Training Center',
-      issueDate: '2023-11-01',
-      expiryDate: '2024-11-01',
-      status: 'valid',
-      daysUntilExpiry: 132,
-      criticality: 'medium',
-      notificationsSent: [],
-      autoRenewal: true
+      issuer: 'Healthcare Training Institute',
+      issueDate: '2023-08-30',
+      expiryDate: '2024-08-30',
+      status: 'pending_renewal',
+      progress: 60,
+      attachments: 1
     }
   ]);
 
-  const [notificationSettings, setNotificationSettings] = useState<CredentialNotificationSettings>({
-    email: true,
-    sms: true,
-    inApp: true,
-    reminderDays: [90, 60, 30, 14, 7, 1]
-  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
-  const [showSettings, setShowSettings] = useState(false);
-
-  // Calculate notification stats
-  const stats = {
-    total: credentials.length,
-    valid: credentials.filter(c => c.status === 'valid').length,
-    expiring: credentials.filter(c => c.status === 'expiring_soon').length,
-    expired: credentials.filter(c => c.status === 'expired').length,
-    critical: credentials.filter(c => c.criticality === 'critical' && c.status !== 'valid').length
-  };
-
-  // Auto-check for notifications that need to be sent
-  useEffect(() => {
-    const checkNotifications = () => {
-      credentials.forEach(credential => {
-        notificationSettings.reminderDays.forEach(days => {
-          if (credential.daysUntilExpiry === days && 
-              !credential.notificationsSent.includes(`${days}-day`)) {
-            
-            sendNotification(credential, days);
-          }
-        });
-      });
-    };
-
-    const interval = setInterval(checkNotifications, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [credentials, notificationSettings]);
-
-  const sendNotification = (credential: EnhancedCredential, days: number) => {
-    console.log(`Sending notification for ${credential.name} - ${days} days until expiry`);
-    
-    if (notificationSettings.inApp) {
-      toast({
-        title: "Credential Expiring Soon",
-        description: `${credential.name} expires in ${days} day${days !== 1 ? 's' : ''}`,
-        variant: credential.criticality === 'critical' ? 'destructive' : 'default'
-      });
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      case 'expiring_soon':
+        return <Badge className="bg-yellow-100 text-yellow-800">Expiring Soon</Badge>;
+      case 'expired':
+        return <Badge variant="destructive">Expired</Badge>;
+      case 'pending_renewal':
+        return <Badge className="bg-blue-100 text-blue-800">Pending Renewal</Badge>;
+      default:
+        return null;
     }
-
-    // Update notification history
-    setCredentials(prev => prev.map(c => 
-      c.id === credential.id 
-        ? { ...c, notificationsSent: [...c.notificationsSent, `${days}-day`] }
-        : c
-    ));
-  };
-
-  const getCriticalityColor = (criticality: string) => {
-    const colors = {
-      low: 'bg-blue-500',
-      medium: 'bg-yellow-500', 
-      high: 'bg-orange-500',
-      critical: 'bg-red-500'
-    };
-    return colors[criticality as keyof typeof colors] || colors.low;
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'valid':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'active':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'expiring_soon':
-        return <Clock className="w-5 h-5 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-yellow-500" />;
       case 'expired':
-        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+      case 'pending_renewal':
+        return <Clock className="w-4 h-4 text-blue-500" />;
       default:
-        return <Clock className="w-5 h-5 text-gray-500" />;
+        return null;
     }
   };
 
-  const getProgressValue = (daysUntilExpiry: number, issueDate: string, expiryDate: string) => {
-    const totalDays = Math.abs(new Date(expiryDate).getTime() - new Date(issueDate).getTime()) / (1000 * 60 * 60 * 24);
-    const daysElapsed = totalDays - daysUntilExpiry;
-    return Math.max(0, Math.min(100, (daysElapsed / totalDays) * 100));
+  // Button handlers
+  const handleAddCredential = () => {
+    console.log('Add new credential clicked');
+    toast({
+      title: "Add New Credential",
+      description: "Opening credential creation form...",
+    });
   };
 
-  const toggleAutoRenewal = (credentialId: string) => {
-    setCredentials(prev => prev.map(c => 
-      c.id === credentialId 
-        ? { ...c, autoRenewal: !c.autoRenewal }
-        : c
-    ));
+  const handleViewCredential = (credentialId: string) => {
+    console.log('View credential:', credentialId);
+    toast({
+      title: "View Credential",
+      description: "Opening credential details...",
+    });
   };
+
+  const handleEditCredential = (credentialId: string) => {
+    console.log('Edit credential:', credentialId);
+    toast({
+      title: "Edit Credential",
+      description: "Opening credential editor...",
+    });
+  };
+
+  const handleUploadDocument = (credentialId: string) => {
+    console.log('Upload document for credential:', credentialId);
+    toast({
+      title: "Upload Document",
+      description: "Opening document upload dialog...",
+    });
+  };
+
+  const handleDownloadReport = () => {
+    console.log('Download credential report clicked');
+    toast({
+      title: "Download Report",
+      description: "Generating credential tracking report...",
+    });
+  };
+
+  const handleRenewCredential = (credentialId: string) => {
+    console.log('Renew credential:', credentialId);
+    toast({
+      title: "Renew Credential",
+      description: "Starting renewal process...",
+    });
+  };
+
+  const filteredCredentials = credentials.filter(credential => {
+    const matchesSearch = credential.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         credential.issuer.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || credential.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-gray-600">Total</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.valid}</div>
-            <div className="text-sm text-gray-600">Valid</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-600">{stats.expiring}</div>
-            <div className="text-sm text-gray-600">Expiring</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">{stats.expired}</div>
-            <div className="text-sm text-gray-600">Expired</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">{stats.critical}</div>
-            <div className="text-sm text-gray-600">Critical</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Critical Alerts */}
-      {stats.critical > 0 && (
-        <Card className="border-l-4 border-l-red-500 bg-red-50">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-red-700">
-              <AlertTriangle className="w-5 h-5" />
-              <span>Critical Credential Issues ({stats.critical})</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {credentials
-                .filter(c => c.criticality === 'critical' && c.status !== 'valid')
-                .map(credential => (
-                  <div key={credential.id} className="flex items-center justify-between bg-white p-3 rounded border">
-                    <div>
-                      <span className="font-medium">{credential.name}</span>
-                      <div className="text-sm text-red-600">
-                        {credential.status === 'expired' 
-                          ? `Expired ${Math.abs(credential.daysUntilExpiry)} days ago`
-                          : `Expires in ${credential.daysUntilExpiry} days`
-                        }
-                      </div>
-                    </div>
-                    <Button size="sm" variant="destructive">
-                      Renew Now
-                    </Button>
-                  </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Main Credential List */}
+      {/* Header with Actions */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5" />
-              <span>Credential Tracking</span>
-            </CardTitle>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+            <div>
+              <CardTitle className="flex items-center space-x-2">
+                <Calendar className="w-5 h-5" />
+                <span>Credential Tracking</span>
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Track and manage all your professional credentials
+              </p>
+            </div>
             <div className="flex space-x-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowSettings(!showSettings)}
+                onClick={handleDownloadReport}
+                className="flex items-center space-x-2"
               >
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
+                <Download className="w-4 h-4" />
+                <span>Export Report</span>
               </Button>
-              <Button size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Credential
+              <Button
+                size="sm"
+                onClick={handleAddCredential}
+                className="flex items-center space-x-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Credential</span>
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Notification Settings */}
-          {showSettings && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
-              <h4 className="font-medium mb-4">Notification Settings</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center space-x-2">
-                  <Mail className="w-4 h-4" />
-                  <span className="text-sm">Email Notifications</span>
-                  <Switch
-                    checked={notificationSettings.email}
-                    onCheckedChange={(checked) => 
-                      setNotificationSettings(prev => ({ ...prev, email: checked }))
-                    }
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="w-4 h-4" />
-                  <span className="text-sm">SMS Notifications</span>
-                  <Switch
-                    checked={notificationSettings.sms}
-                    onCheckedChange={(checked) => 
-                      setNotificationSettings(prev => ({ ...prev, sms: checked }))
-                    }
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Bell className="w-4 h-4" />
-                  <span className="text-sm">In-App Notifications</span>
-                  <Switch
-                    checked={notificationSettings.inApp}
-                    onCheckedChange={(checked) => 
-                      setNotificationSettings(prev => ({ ...prev, inApp: checked }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="mt-4">
-                <label className="text-sm font-medium">Reminder Schedule (days before expiry)</label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {notificationSettings.reminderDays.map(days => (
-                    <Badge key={days} variant="outline">{days} days</Badge>
-                  ))}
-                </div>
-              </div>
+          {/* Search and Filters */}
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search credentials..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-          )}
-
-          {/* Credentials List */}
-          <div className="space-y-4">
-            {credentials.map((credential) => (
-              <div key={credential.id} className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      {getStatusIcon(credential.status)}
-                      <h4 className="font-medium">{credential.name}</h4>
-                      <div className={`w-2 h-2 rounded-full ${getCriticalityColor(credential.criticality)}`} />
-                      <Badge variant="outline" className="text-xs">
-                        {credential.type.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <div>Issuer: {credential.issuer}</div>
-                      <div>Expires: {credential.expiryDate}</div>
-                      <div className={
-                        credential.daysUntilExpiry < 0 ? 'text-red-600 font-medium' :
-                        credential.daysUntilExpiry <= 30 ? 'text-orange-600 font-medium' :
-                        'text-gray-600'
-                      }>
-                        {credential.daysUntilExpiry < 0 
-                          ? `Expired ${Math.abs(credential.daysUntilExpiry)} days ago`
-                          : `${credential.daysUntilExpiry} days remaining`
-                        }
-                      </div>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="mt-2">
-                      <Progress 
-                        value={getProgressValue(credential.daysUntilExpiry, credential.issueDate, credential.expiryDate)}
-                        className="h-2"
-                      />
-                    </div>
-
-                    {/* Notifications Sent */}
-                    {credential.notificationsSent.length > 0 && (
-                      <div className="mt-2">
-                        <div className="text-xs text-gray-500">
-                          Notifications sent: {credential.notificationsSent.join(', ')}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col items-end space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500">Auto-renew</span>
-                      <Switch
-                        checked={credential.autoRenewal}
-                        onCheckedChange={() => toggleAutoRenewal(credential.id)}
-                      />
-                    </div>
-                    
-                    <div className="flex space-x-2">
-                      {credential.renewalUrl && (
-                        <Button size="sm" variant="outline">
-                          Renew
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-full sm:w-48">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="expiring_soon">Expiring Soon</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+                <SelectItem value="pending_renewal">Pending Renewal</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
+
+      {/* Credentials List */}
+      <div className="grid gap-4">
+        {filteredCredentials.map((credential) => (
+          <Card key={credential.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
+                {/* Credential Info */}
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center space-x-2">
+                    {getStatusIcon(credential.status)}
+                    <h3 className="font-semibold text-lg">{credential.name}</h3>
+                    {getStatusBadge(credential.status)}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+                    <div>
+                      <span className="font-medium">Issuer:</span> {credential.issuer}
+                    </div>
+                    <div>
+                      <span className="font-medium">Type:</span> {credential.type.replace('_', ' ')}
+                    </div>
+                    <div>
+                      <span className="font-medium">Issue Date:</span> {credential.issueDate}
+                    </div>
+                    <div>
+                      <span className="font-medium">Expiry Date:</span> {credential.expiryDate}
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Completion Status</span>
+                      <span>{credential.progress}%</span>
+                    </div>
+                    <Progress value={credential.progress} className="h-2" />
+                  </div>
+
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium">Attachments:</span> {credential.attachments} files
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col space-y-2 lg:w-48">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewCredential(credential.id)}
+                    className="flex items-center justify-center space-x-2"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>View Details</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditCredential(credential.id)}
+                    className="flex items-center justify-center space-x-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Edit</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleUploadDocument(credential.id)}
+                    className="flex items-center justify-center space-x-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Upload Doc</span>
+                  </Button>
+
+                  {(credential.status === 'expired' || credential.status === 'expiring_soon' || credential.status === 'pending_renewal') && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleRenewCredential(credential.id)}
+                      className="flex items-center justify-center space-x-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Renew</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredCredentials.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No credentials found matching your criteria.</p>
+            <Button 
+              className="mt-4"
+              onClick={handleAddCredential}
+            >
+              Add Your First Credential
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
