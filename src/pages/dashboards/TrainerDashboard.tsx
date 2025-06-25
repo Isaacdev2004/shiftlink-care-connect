@@ -4,13 +4,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, BookOpen, Users, DollarSign, Star, Calendar, MapPin } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import CourseManager from '@/components/CourseManager';
+import CourseForm from '@/components/CourseForm';
 import TrainerProfile from '@/components/TrainerProfile';
 import CommissionTracker from '@/components/CommissionTracker';
 
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+  location: string;
+  capacity: number;
+  enrolled: number;
+  nextDate: string;
+  status: string;
+  rating: number;
+  reviews: number;
+}
+
 const TrainerDashboard = () => {
-  const [courses] = useState([
+  const [courses, setCourses] = useState<Course[]>([
     {
       id: '1',
       title: 'CPR & First Aid Certification',
@@ -41,6 +59,8 @@ const TrainerDashboard = () => {
     }
   ]);
 
+  const [showCreateCourseDialog, setShowCreateCourseDialog] = useState(false);
+
   const [stats] = useState({
     totalEarnings: 4750.25,
     totalStudents: 156,
@@ -49,6 +69,23 @@ const TrainerDashboard = () => {
     pendingCommission: 475.25,
     completedCourses: 23
   });
+
+  const handleCreateCourse = (courseData: Omit<Course, 'id' | 'enrolled' | 'rating' | 'reviews'>) => {
+    const newCourse: Course = {
+      id: Date.now().toString(),
+      ...courseData,
+      enrolled: 0,
+      rating: 0,
+      reviews: 0
+    };
+    
+    setCourses(prev => [...prev, newCourse]);
+    setShowCreateCourseDialog(false);
+    toast({
+      title: "Success",
+      description: "Course created successfully"
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,7 +97,10 @@ const TrainerDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">Trainer Dashboard</h1>
               <p className="text-gray-600">Manage your courses and track your earnings</p>
             </div>
-            <Button className="bg-medical-blue hover:bg-blue-800">
+            <Button 
+              className="bg-medical-blue hover:bg-blue-800"
+              onClick={() => setShowCreateCourseDialog(true)}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Create New Course
             </Button>
@@ -100,7 +140,7 @@ const TrainerDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Active Courses</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.activeCourses}</p>
+                  <p className="text-2xl font-bold text-purple-600">{courses.filter(c => c.status === 'active').length}</p>
                 </div>
                 <BookOpen className="w-8 h-8 text-purple-500" />
               </div>
@@ -130,7 +170,10 @@ const TrainerDashboard = () => {
           </TabsList>
 
           <TabsContent value="courses">
-            <CourseManager courses={courses} />
+            <CourseManager 
+              courses={courses} 
+              onCoursesChange={setCourses}
+            />
           </TabsContent>
 
           <TabsContent value="profile">
@@ -157,6 +200,19 @@ const TrainerDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Create Course Dialog */}
+      <Dialog open={showCreateCourseDialog} onOpenChange={setShowCreateCourseDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Course</DialogTitle>
+          </DialogHeader>
+          <CourseForm
+            onSave={handleCreateCourse}
+            onCancel={() => setShowCreateCourseDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
