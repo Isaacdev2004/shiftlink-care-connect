@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +33,14 @@ const AgencyDashboard = () => {
       totalShifts: prev.totalShifts + 1
     }));
     setShowShiftForm(false);
+  };
+
+  const handleUpdateShift = (updatedShift: PostedShift) => {
+    setPostedShifts(prev => 
+      prev.map(shift => 
+        shift.id === updatedShift.id ? updatedShift : shift
+      )
+    );
   };
 
   const handleDeleteShift = (shiftId: string) => {
@@ -166,6 +173,7 @@ const AgencyDashboard = () => {
                 </div>
                 <PostedShiftsList 
                   shifts={postedShifts}
+                  onUpdateShift={handleUpdateShift}
                   onDeleteShift={handleDeleteShift}
                 />
               </div>

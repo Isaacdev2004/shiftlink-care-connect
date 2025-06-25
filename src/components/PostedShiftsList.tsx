@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calendar, Clock, MapPin, DollarSign, Eye, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import ShiftEditForm from './ShiftEditForm';
 
 export interface PostedShift {
   id: string;
@@ -34,6 +35,7 @@ interface PostedShiftsListProps {
 
 const PostedShiftsList = ({ shifts, onUpdateShift, onDeleteShift }: PostedShiftsListProps) => {
   const { toast } = useToast();
+  const [editingShift, setEditingShift] = useState<PostedShift | null>(null);
 
   const getStatusBadge = (status: string) => {
     const colors = {
@@ -52,10 +54,16 @@ const PostedShiftsList = ({ shifts, onUpdateShift, onDeleteShift }: PostedShifts
   };
 
   const handleEditShift = (shift: PostedShift) => {
-    toast({
-      title: "Edit Shift",
-      description: `Opening edit form for "${shift.title}"`,
-    });
+    setEditingShift(shift);
+  };
+
+  const handleShiftUpdated = (updatedShift: PostedShift) => {
+    onUpdateShift?.(updatedShift);
+    setEditingShift(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingShift(null);
   };
 
   const handleDeleteShift = (shift: PostedShift) => {
@@ -67,6 +75,16 @@ const PostedShiftsList = ({ shifts, onUpdateShift, onDeleteShift }: PostedShifts
       });
     }
   };
+
+  if (editingShift) {
+    return (
+      <ShiftEditForm
+        shift={editingShift}
+        onShiftUpdated={handleShiftUpdated}
+        onCancel={handleCancelEdit}
+      />
+    );
+  }
 
   if (shifts.length === 0) {
     return (
