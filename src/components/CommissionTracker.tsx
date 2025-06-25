@@ -4,7 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DollarSign, TrendingUp, Calendar, Download, Eye } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface CommissionStats {
   totalEarnings: number;
@@ -50,6 +53,9 @@ const CommissionTracker = ({ stats }: CommissionTrackerProps) => {
     }
   ]);
 
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [showTransactionDetails, setShowTransactionDetails] = useState(false);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
@@ -61,6 +67,62 @@ const CommissionTracker = ({ stats }: CommissionTrackerProps) => {
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
+  };
+
+  const handleExportReport = () => {
+    // Create CSV content
+    const csvContent = [
+      ['Date', 'Course', 'Student', 'Amount', 'Commission', 'Status'],
+      ...transactions.map(t => [
+        t.date,
+        t.course,
+        t.student,
+        `$${t.amount}`,
+        `$${t.commission}`,
+        t.status
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `commission-report-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Success",
+      description: "Commission report exported successfully"
+    });
+  };
+
+  const handleRequestPayout = () => {
+    const pendingAmount = transactions
+      .filter(t => t.status === 'pending')
+      .reduce((sum, t) => sum + t.commission, 0);
+
+    if (pendingAmount === 0) {
+      toast({
+        title: "No Pending Commission",
+        description: "You don't have any pending commission to request payout for"
+      });
+      return;
+    }
+
+    // Simulate payout request
+    toast({
+      title: "Payout Requested",
+      description: `Payout request for $${pendingAmount.toFixed(2)} has been submitted. You'll receive an email confirmation shortly.`
+    });
+  };
+
+  const handleViewTransaction = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setShowTransactionDetails(true);
   };
 
   const totalCommissionEarned = transactions
@@ -79,11 +141,11 @@ const CommissionTracker = ({ stats }: CommissionTrackerProps) => {
           <p className="text-gray-600">Track your earnings and commission payments (10% platform fee)</p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExportReport}>
             <Download className="w-4 h-4 mr-2" />
             Export Report
           </Button>
-          <Button className="bg-medical-blue hover:bg-blue-800">
+          <Button className="bg-medical-blue hover:bg-blue-800" onClick={handleRequestPayout}>
             Request Payout
           </Button>
         </div>
@@ -175,7 +237,11 @@ const CommissionTracker = ({ stats }: CommissionTrackerProps) => {
                   <p className="text-sm text-gray-600">Commission: ${transaction.commission}</p>
                   {getStatusBadge(transaction.status)}
                 </div>
-                <Button variant="ghost" size="sm">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleViewTransaction(transaction)}
+                >
                   <Eye className="w-4 h-4" />
                 </Button>
               </div>
@@ -183,6 +249,75 @@ const CommissionTracker = ({ stats }: CommissionTrackerProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Transaction Details Dialog */}
+      <Dialog open={showTransactionDetails} onOpenChange={setShowTransactionDetails}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Transaction Details</DialogTitle>
+          </DialogHeader>
+          {selectedTransaction && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Transaction ID</p>
+                  <p className="text-lg">{selectedTransaction.id}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Date</p>
+                  <p className="text-lg">{selectedTransaction.date}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Course</p>
+                  <p className="text-lg">{selectedTransaction.course}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Student</p>
+                  <p className="text-lg">{selectedTransaction.student}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Course Amount</p>
+                  <p className="text-lg font-semibold">${selectedTransaction.amount}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Your Commission (10%)</p>
+                  <p className="text-lg font-semibold text-green-600">${selectedTransaction.commission}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Status</p>
+                  {getStatusBadge(selectedTransaction.status)}
+                </div>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Course Fee</TableCell>
+                    <TableCell className="text-right">${selectedTransaction.amount}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Platform Fee (10%)</TableCell>
+                    <TableCell className="text-right">-${selectedTransaction.commission}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Your Earnings</TableCell>
+                    <TableCell className="text-right font-medium">${(selectedTransaction.amount - selectedTransaction.commission).toFixed(2)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
