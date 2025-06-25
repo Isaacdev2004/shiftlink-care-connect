@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, Users, Calendar, MessageSquare, BarChart3, Plus } from 'lucide-react';
 import ShiftPosting from '@/components/ShiftPosting';
 import PostedShiftsList, { PostedShift } from '@/components/PostedShiftsList';
-import MessagingSystem from '@/components/MessagingSystem';
+import OptimizedMessagingSystem from '@/components/messaging/OptimizedMessagingSystem';
 import DSPApprovalManager from '@/components/DSPApprovalManager';
 
 const AgencyDashboard = () => {
@@ -187,7 +186,11 @@ const AgencyDashboard = () => {
           </TabsContent>
 
           <TabsContent value="messages" className="space-y-6">
-            <MessagingSystem userRole="agency" />
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Message Center</h3>
+              <p className="text-gray-600">Communicate with DSPs about active and upcoming shifts</p>
+            </div>
+            <OptimizedMessagingSystem userRole="agency" />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
