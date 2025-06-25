@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -49,7 +48,7 @@ const CredentialEditForm = ({ credential, open, onOpenChange, onCredentialUpdate
     }
   }, [credential]);
 
-  const calculateStatus = (expiryDate: string) => {
+  const calculateStatus = (expiryDate: string): 'active' | 'expiring_soon' | 'expired' => {
     const today = new Date();
     const expiry = new Date(expiryDate);
     const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 3600 * 24));
