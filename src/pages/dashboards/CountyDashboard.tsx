@@ -5,12 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, TrendingUp, Flag, Calendar, FileText, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import ShiftAnalytics from '@/components/ShiftAnalytics';
 import CredentialReports from '@/components/CredentialReports';
 import DSPApprovalManager from '@/components/DSPApprovalManager';
 import JobFairManager from '@/components/JobFairManager';
 
 const CountyDashboard = () => {
+  const { toast } = useToast();
+  
   const [stats] = useState({
     totalDSPs: 156,
     pendingApprovals: 12,
@@ -22,6 +25,56 @@ const CountyDashboard = () => {
     complianceRate: 94.2
   });
 
+  const handleGenerateReport = () => {
+    console.log('Generate Report clicked');
+    
+    // Create comprehensive report data
+    const reportData = {
+      'Report Generation Date': new Date().toISOString().split('T')[0],
+      'Report Generation Time': new Date().toLocaleTimeString(),
+      'Report Type': 'County Board Compliance Report',
+      'Reporting Period': 'Current Month',
+      '',
+      'DSP Statistics': '',
+      'Total DSPs': stats.totalDSPs,
+      'Active DSPs': stats.activeDSPs,
+      'Pending Approvals': stats.pendingApprovals,
+      'Flagged DSPs': stats.flaggedDSPs,
+      ' ': '',
+      'Operational Metrics': '',
+      'Total Shifts': stats.totalShifts,
+      'Upcoming Job Fairs': stats.upcomingJobFairs,
+      'Credential Issues': stats.credentialIssues,
+      'Compliance Rate': `${stats.complianceRate}%`,
+      '  ': '',
+      'Compliance Status': '',
+      'Overall Rating': stats.complianceRate >= 95 ? 'Excellent' : stats.complianceRate >= 90 ? 'Good' : 'Needs Improvement',
+      'Action Required': stats.credentialIssues > 20 ? 'Yes - Address credential issues' : 'No - Monitoring only',
+      'Recommendations': stats.flaggedDSPs > 5 ? 'Review flagged DSPs immediately' : 'Continue regular monitoring'
+    };
+
+    // Convert to CSV format
+    const csvContent = Object.entries(reportData)
+      .map(([key, value]) => `"${key}","${value}"`)
+      .join('\n');
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `county-board-report-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Report Generated Successfully",
+      description: "County Board compliance report has been downloaded to your device.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -32,7 +85,10 @@ const CountyDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">County Board Dashboard</h1>
               <p className="text-gray-600">Regional oversight and compliance management</p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={handleGenerateReport}
+            >
               <FileText className="w-4 h-4 mr-2" />
               Generate Report
             </Button>

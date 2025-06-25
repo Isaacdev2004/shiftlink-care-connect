@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -161,7 +160,6 @@ const CredentialTracker = () => {
 
   const handleDocumentUploaded = () => {
     if (selectedCredential) {
-      // Update attachment count for the selected credential
       setCredentials(prev => 
         prev.map(c => 
           c.id === selectedCredential.id 
@@ -173,45 +171,47 @@ const CredentialTracker = () => {
   };
 
   const handleDownloadReport = () => {
-    console.log('Download credential report clicked');
-    // Create a simple report data
-    const reportData = credentials.map(c => ({
-      name: c.name,
-      type: c.type,
-      issuer: c.issuer,
-      status: c.status,
-      expiryDate: c.expiryDate,
-      progress: c.progress
-    }));
+    console.log('Export credential report clicked');
     
+    // Get filtered credentials for export
+    const exportData = filteredCredentials.map(c => ({
+      'Credential Name': c.name,
+      'Type': c.type.charAt(0).toUpperCase() + c.type.slice(1).replace('_', ' '),
+      'Issuer': c.issuer,
+      'Issue Date': c.issueDate,
+      'Expiry Date': c.expiryDate,
+      'Status': c.status.replace('_', ' ').toUpperCase(),
+      'Progress': `${c.progress}%`,
+      'Attachments': c.attachments,
+      'Days Until Expiry': Math.ceil((new Date(c.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    }));
+
     // Convert to CSV format
-    const headers = ['Name', 'Type', 'Issuer', 'Status', 'Expiry Date', 'Progress'];
+    const headers = Object.keys(exportData[0] || {});
     const csvContent = [
       headers.join(','),
-      ...reportData.map(row => [
-        row.name,
-        row.type,
-        row.issuer,
-        row.status,
-        row.expiryDate,
-        `${row.progress}%`
-      ].join(','))
+      ...exportData.map(row => 
+        headers.map(header => {
+          const value = row[header as keyof typeof row];
+          return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
+        }).join(',')
+      )
     ].join('\n');
-    
+
     // Create and download the file
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `credential-report-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `credential-export-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-    
+
     toast({
-      title: "Report Downloaded",
-      description: "Credential tracking report has been downloaded successfully.",
+      title: "Export Successful",
+      description: `Exported ${exportData.length} credentials to CSV file.`,
     });
   };
 
