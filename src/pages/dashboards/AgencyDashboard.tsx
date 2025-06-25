@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,8 @@ import ShiftPosting from '@/components/ShiftPosting';
 import PostedShiftsList, { PostedShift } from '@/components/PostedShiftsList';
 import OptimizedMessagingSystem from '@/components/messaging/OptimizedMessagingSystem';
 import DSPApprovalManager from '@/components/DSPApprovalManager';
+import ShiftAnalytics from '@/components/ShiftAnalytics';
+import ComplianceReports from '@/components/ComplianceReports';
 
 const AgencyDashboard = () => {
   const [stats, setStats] = useState({
@@ -194,22 +197,25 @@ const AgencyDashboard = () => {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Analytics & Reports</CardTitle>
-                <CardDescription>Track your agency's performance and metrics</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
-                  <p className="text-gray-600 mb-4">View detailed analytics and reports</p>
-                  <Button className="bg-medical-blue hover:bg-blue-800">
-                    View Analytics
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">Analytics & Reports</h3>
+              <p className="text-gray-600">Track your agency's performance, shift trends, and compliance metrics</p>
+            </div>
+            
+            <Tabs defaultValue="shifts" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="shifts">Shift Analytics</TabsTrigger>
+                <TabsTrigger value="compliance">Compliance Reports</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="shifts">
+                <ShiftAnalytics />
+              </TabsContent>
+
+              <TabsContent value="compliance">
+                <ComplianceReports />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>
