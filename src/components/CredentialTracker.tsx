@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, CheckCircle, Clock, AlertTriangle, Plus, Search, Filter, Download, Upload, Eye, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import CredentialForm from './CredentialForm';
+import CredentialDetails from './CredentialDetails';
 
 interface CredentialItem {
   id: string;
@@ -24,7 +25,7 @@ interface CredentialItem {
 const CredentialTracker = () => {
   const { toast } = useToast();
   
-  const [credentials] = useState<CredentialItem[]>([
+  const [credentials, setCredentials] = useState<CredentialItem[]>([
     {
       id: '1',
       name: 'CPR Certification',
@@ -73,6 +74,9 @@ const CredentialTracker = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showCredentialForm, setShowCredentialForm] = useState(false);
+  const [showCredentialDetails, setShowCredentialDetails] = useState(false);
+  const [selectedCredential, setSelectedCredential] = useState<CredentialItem | null>(null);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -104,36 +108,47 @@ const CredentialTracker = () => {
     }
   };
 
-  // Button handlers
+  // Updated button handlers
   const handleAddCredential = () => {
-    console.log('Add new credential clicked');
-    toast({
-      title: "Add New Credential",
-      description: "Opening credential creation form...",
-    });
+    console.log('Opening credential form');
+    setShowCredentialForm(true);
+  };
+
+  const handleCredentialAdded = (newCredential: CredentialItem) => {
+    setCredentials(prev => [...prev, newCredential]);
+    console.log('New credential added:', newCredential);
   };
 
   const handleViewCredential = (credentialId: string) => {
     console.log('View credential:', credentialId);
-    toast({
-      title: "View Credential",
-      description: "Opening credential details...",
-    });
+    const credential = credentials.find(c => c.id === credentialId);
+    if (credential) {
+      setSelectedCredential(credential);
+      setShowCredentialDetails(true);
+    }
   };
 
   const handleEditCredential = (credentialId: string) => {
     console.log('Edit credential:', credentialId);
     toast({
       title: "Edit Credential",
-      description: "Opening credential editor...",
+      description: "Credential editing functionality coming soon...",
     });
   };
 
   const handleUploadDocument = (credentialId: string) => {
     console.log('Upload document for credential:', credentialId);
+    // Update attachment count for demo purposes
+    setCredentials(prev => 
+      prev.map(c => 
+        c.id === credentialId 
+          ? { ...c, attachments: c.attachments + 1 }
+          : c
+      )
+    );
     toast({
-      title: "Upload Document",
-      description: "Opening document upload dialog...",
+      title: "Document Uploaded",
+      description: "Document has been successfully attached to the credential.",
     });
   };
 
@@ -148,8 +163,8 @@ const CredentialTracker = () => {
   const handleRenewCredential = (credentialId: string) => {
     console.log('Renew credential:', credentialId);
     toast({
-      title: "Renew Credential",
-      description: "Starting renewal process...",
+      title: "Renewal Process",
+      description: "Credential renewal process initiated...",
     });
   };
 
@@ -331,6 +346,22 @@ const CredentialTracker = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Modals */}
+      <CredentialForm 
+        open={showCredentialForm}
+        onOpenChange={setShowCredentialForm}
+        onCredentialAdded={handleCredentialAdded}
+      />
+
+      <CredentialDetails
+        credential={selectedCredential}
+        open={showCredentialDetails}
+        onOpenChange={setShowCredentialDetails}
+        onEdit={handleEditCredential}
+        onUploadDocument={handleUploadDocument}
+        onRenew={handleRenewCredential}
+      />
     </div>
   );
 };
