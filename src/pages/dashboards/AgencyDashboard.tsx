@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { Shield, Users, Calendar, MessageSquare, BarChart3, Plus } from 'lucide-
 import ShiftPosting from '@/components/ShiftPosting';
 import PostedShiftsList, { PostedShift } from '@/components/PostedShiftsList';
 import MessagingSystem from '@/components/MessagingSystem';
+import DSPApprovalManager from '@/components/DSPApprovalManager';
 
 const AgencyDashboard = () => {
   const [stats, setStats] = useState({
@@ -181,22 +183,7 @@ const AgencyDashboard = () => {
           </TabsContent>
 
           <TabsContent value="dsps" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>DSP Network Management</CardTitle>
-                <CardDescription>Manage your network of Direct Support Professionals</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">DSP Network</h3>
-                  <p className="text-gray-600 mb-4">View and manage your DSP relationships</p>
-                  <Button className="bg-medical-blue hover:bg-blue-800">
-                    View DSP Network
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <DSPApprovalManager />
           </TabsContent>
 
           <TabsContent value="messages" className="space-y-6">
