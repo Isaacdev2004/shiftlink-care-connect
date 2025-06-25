@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Calendar, FileText, Building, Award, Clock, CheckCircle, AlertTriangle, Upload } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface CredentialItem {
   id: string;
@@ -24,6 +25,7 @@ interface CredentialDetailsProps {
   onEdit?: (credentialId: string) => void;
   onUploadDocument?: (credentialId: string) => void;
   onRenew?: (credentialId: string) => void;
+  onCredentialUpdated?: (credential: CredentialItem) => void;
 }
 
 const CredentialDetails = ({ 
@@ -32,8 +34,11 @@ const CredentialDetails = ({
   onOpenChange, 
   onEdit, 
   onUploadDocument, 
-  onRenew 
+  onRenew,
+  onCredentialUpdated
 }: CredentialDetailsProps) => {
+  const { toast } = useToast();
+
   if (!credential) return null;
 
   const getStatusBadge = (status: string) => {
@@ -74,6 +79,59 @@ const CredentialDetails = ({
     return daysDiff;
   };
 
+  const handleTakeActionNow = () => {
+    if (credential.status === 'expired' || credential.status === 'expiring_soon') {
+      // Start renewal process
+      const updatedCredential = {
+        ...credential,
+        status: 'pending_renewal' as const,
+        progress: 25
+      };
+      onCredentialUpdated?.(updatedCredential);
+      toast({
+        title: "Renewal Started",
+        description: `Renewal process initiated for ${credential.name}. You'll receive further instructions via email.`
+      });
+    } else if (credential.progress < 100) {
+      // Complete missing requirements
+      const updatedCredential = {
+        ...credential,
+        progress: Math.min(credential.progress + 25, 100)
+      };
+      onCredentialUpdated?.(updatedCredential);
+      toast({
+        title: "Progress Updated",
+        description: "Credential requirements updated. Keep completing your checklist!"
+      });
+    }
+  };
+
+  const handleRenewNow = () => {
+    const updatedCredential = {
+      ...credential,
+      status: 'pending_renewal' as const,
+      progress: 15
+    };
+    onCredentialUpdated?.(updatedCredential);
+    toast({
+      title: "Renewal Process Started",
+      description: `Standard renewal process initiated for ${credential.name}. Expected completion in 2-3 weeks.`
+    });
+  };
+
+  const handleRenewEarly = () => {
+    const updatedCredential = {
+      ...credential,
+      status: 'pending_renewal' as const,
+      progress: 10
+    };
+    onCredentialUpdated?.(updatedCredential);
+    toast({
+      title: "Early Renewal Started",
+      description: `Early renewal process initiated for ${credential.name}. This will extend your current expiry date.`
+    });
+  };
+
   const daysUntilExpiry = getDaysUntilExpiry();
 
   return (
@@ -91,6 +149,27 @@ const CredentialDetails = ({
         </DialogHeader>
         
         <div className="space-y-6">
+          {/* Urgent Actions */}
+          {(credential.status === 'expired' || credential.status === 'expiring_soon' || credential.progress < 100) && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h4 className="font-medium text-yellow-800 mb-2">Action Required</h4>
+              <p className="text-sm text-yellow-700 mb-3">
+                {credential.status === 'expired' 
+                  ? 'This credential has expired and needs immediate renewal.'
+                  : credential.status === 'expiring_soon'
+                  ? `This credential expires in ${daysUntilExpiry} days.`
+                  : 'Complete remaining requirements to maintain this credential.'}
+              </p>
+              <Button
+                size="sm"
+                onClick={handleTakeActionNow}
+                className="bg-yellow-600 hover:bg-yellow-700"
+              >
+                Take Action Now
+              </Button>
+            </div>
+          )}
+
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -178,16 +257,27 @@ const CredentialDetails = ({
               <span>Upload Document</span>
             </Button>
 
-            {(credential.status === 'expired' || 
-              credential.status === 'expiring_soon' || 
-              credential.status === 'pending_renewal') && (
+            {credential.status === 'active' && daysUntilExpiry > 30 && (
               <Button
+                variant="outline"
                 size="sm"
-                onClick={() => onRenew?.(credential.id)}
+                onClick={handleRenewEarly}
                 className="flex items-center space-x-2"
               >
                 <CheckCircle className="w-4 h-4" />
-                <span>Start Renewal</span>
+                <span>Renew Early</span>
+              </Button>
+            )}
+
+            {(credential.status === 'expired' || 
+              credential.status === 'expiring_soon') && (
+              <Button
+                size="sm"
+                onClick={handleRenewNow}
+                className="flex items-center space-x-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>Renew Now</span>
               </Button>
             )}
           </div>

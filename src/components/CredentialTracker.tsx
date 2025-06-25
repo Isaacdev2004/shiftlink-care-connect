@@ -174,18 +174,66 @@ const CredentialTracker = () => {
 
   const handleDownloadReport = () => {
     console.log('Download credential report clicked');
+    // Create a simple report data
+    const reportData = credentials.map(c => ({
+      name: c.name,
+      type: c.type,
+      issuer: c.issuer,
+      status: c.status,
+      expiryDate: c.expiryDate,
+      progress: c.progress
+    }));
+    
+    // Convert to CSV format
+    const headers = ['Name', 'Type', 'Issuer', 'Status', 'Expiry Date', 'Progress'];
+    const csvContent = [
+      headers.join(','),
+      ...reportData.map(row => [
+        row.name,
+        row.type,
+        row.issuer,
+        row.status,
+        row.expiryDate,
+        `${row.progress}%`
+      ].join(','))
+    ].join('\n');
+    
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `credential-report-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
     toast({
-      title: "Download Report",
-      description: "Generating credential tracking report...",
+      title: "Report Downloaded",
+      description: "Credential tracking report has been downloaded successfully.",
     });
   };
 
   const handleRenewCredential = (credentialId: string) => {
     console.log('Renew credential:', credentialId);
-    toast({
-      title: "Renewal Process",
-      description: "Credential renewal process initiated...",
-    });
+    const credential = credentials.find(c => c.id === credentialId);
+    if (credential) {
+      const updatedCredential = {
+        ...credential,
+        status: 'pending_renewal' as const,
+        progress: Math.max(credential.progress, 25)
+      };
+      setCredentials(prev => 
+        prev.map(c => 
+          c.id === credentialId ? updatedCredential : c
+        )
+      );
+      toast({
+        title: "Renewal Process Started",
+        description: `Renewal initiated for ${credential.name}. You'll receive further instructions via email.`,
+      });
+    }
   };
 
   const filteredCredentials = credentials.filter(credential => {
@@ -381,6 +429,7 @@ const CredentialTracker = () => {
         onEdit={handleEditCredential}
         onUploadDocument={handleUploadDocument}
         onRenew={handleRenewCredential}
+        onCredentialUpdated={handleCredentialUpdated}
       />
 
       <CredentialEditForm

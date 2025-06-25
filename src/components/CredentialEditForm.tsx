@@ -49,6 +49,16 @@ const CredentialEditForm = ({ credential, open, onOpenChange, onCredentialUpdate
     }
   }, [credential]);
 
+  const calculateStatus = (expiryDate: string) => {
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 3600 * 24));
+    
+    if (daysUntilExpiry < 0) return 'expired';
+    if (daysUntilExpiry <= 30) return 'expiring_soon';
+    return 'active';
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -61,13 +71,15 @@ const CredentialEditForm = ({ credential, open, onOpenChange, onCredentialUpdate
       return;
     }
 
+    const newStatus = calculateStatus(formData.expiryDate);
     const updatedCredential = {
       ...credential,
       name: formData.name,
       type: formData.type as 'certification' | 'license' | 'training',
       issuer: formData.issuer,
       issueDate: formData.issueDate,
-      expiryDate: formData.expiryDate
+      expiryDate: formData.expiryDate,
+      status: newStatus
     };
 
     onCredentialUpdated?.(updatedCredential);
