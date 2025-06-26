@@ -1,21 +1,48 @@
 
-import CourseMarketplace from '@/components/CourseMarketplace';
+import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DatabaseCourseMarketplace from '@/components/DatabaseCourseMarketplace';
+import DatabaseCourseManager from '@/components/DatabaseCourseManager';
 
 const CoursesPage = () => {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('marketplace');
+
+  // Check if user is a trainer
+  const isTrainer = user?.user_metadata?.role === 'trainer';
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">Healthcare Training Courses</h1>
-            <p className="mt-2 text-gray-600">Advance your career with professional healthcare certifications</p>
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Training Courses</h1>
+          <p className="text-gray-600">
+            {isTrainer ? 
+              "Manage your courses and browse the marketplace for professional development" :
+              "Browse and enroll in professional healthcare training courses"
+            }
+          </p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <CourseMarketplace />
+        {isTrainer ? (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="marketplace">Course Marketplace</TabsTrigger>
+              <TabsTrigger value="manage">Manage My Courses</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="marketplace" className="mt-6">
+              <DatabaseCourseMarketplace />
+            </TabsContent>
+            
+            <TabsContent value="manage" className="mt-6">
+              <DatabaseCourseManager />
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <DatabaseCourseMarketplace />
+        )}
       </div>
     </div>
   );

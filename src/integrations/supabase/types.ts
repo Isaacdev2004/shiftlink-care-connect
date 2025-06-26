@@ -9,6 +9,164 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      certificates: {
+        Row: {
+          certificate_number: string
+          certificate_type: string
+          course_id: string
+          created_at: string
+          enrollment_id: string
+          expiry_date: string | null
+          file_url: string | null
+          id: string
+          is_valid: boolean
+          issue_date: string
+          student_id: string
+          trainer_id: string
+          verification_code: string
+        }
+        Insert: {
+          certificate_number: string
+          certificate_type: string
+          course_id: string
+          created_at?: string
+          enrollment_id: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          is_valid?: boolean
+          issue_date?: string
+          student_id: string
+          trainer_id: string
+          verification_code: string
+        }
+        Update: {
+          certificate_number?: string
+          certificate_type?: string
+          course_id?: string
+          created_at?: string
+          enrollment_id?: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          is_valid?: boolean
+          issue_date?: string
+          student_id?: string
+          trainer_id?: string
+          verification_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificates_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "course_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_enrollments: {
+        Row: {
+          amount_paid: number | null
+          certificate_issued: boolean
+          certificate_issued_at: string | null
+          certificate_url: string | null
+          course_id: string
+          enrolled_at: string
+          id: string
+          payment_status: string
+          stripe_payment_intent_id: string | null
+          student_id: string
+        }
+        Insert: {
+          amount_paid?: number | null
+          certificate_issued?: boolean
+          certificate_issued_at?: string | null
+          certificate_url?: string | null
+          course_id: string
+          enrolled_at?: string
+          id?: string
+          payment_status?: string
+          stripe_payment_intent_id?: string | null
+          student_id: string
+        }
+        Update: {
+          amount_paid?: number | null
+          certificate_issued?: boolean
+          certificate_issued_at?: string | null
+          certificate_url?: string | null
+          course_id?: string
+          enrolled_at?: string
+          id?: string
+          payment_status?: string
+          stripe_payment_intent_id?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          duration_hours: number | null
+          id: string
+          is_active: boolean
+          learning_objectives: string[] | null
+          max_students: number | null
+          price: number
+          requirements: string | null
+          title: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_hours?: number | null
+          id?: string
+          is_active?: boolean
+          learning_objectives?: string[] | null
+          max_students?: number | null
+          price: number
+          requirements?: string | null
+          title: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_hours?: number | null
+          id?: string
+          is_active?: boolean
+          learning_objectives?: string[] | null
+          max_students?: number | null
+          price?: number
+          requirements?: string | null
+          title?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -53,7 +211,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_certificate_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_verification_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
