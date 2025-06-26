@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Clock, Shield, Users, MapPin, Star } from 'lucide-react';
+import { Check, Clock, Shield, Users, MapPin, Star, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import Testimonials from '@/components/Testimonials';
 import HowItWorks from '@/components/HowItWorks';
 import SecurityCompliance from '@/components/SecurityCompliance';
@@ -12,6 +14,7 @@ import CallToAction from '@/components/CallToAction';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, signOut, loading } = useAuth();
   const [selectedRole, setSelectedRole] = useState<string>('');
 
   const userRoles = [
@@ -50,12 +53,38 @@ const Index = () => {
   ];
 
   const handleGetStarted = () => {
-    if (selectedRole) {
-      navigate(`/register?role=${selectedRole}`);
+    if (user) {
+      // Redirect to appropriate dashboard based on user role
+      navigate('/dashboard/dsp'); // Default for now
     } else {
-      navigate('/register');
+      if (selectedRole) {
+        navigate(`/auth?role=${selectedRole}`);
+      } else {
+        navigate('/auth');
+      }
     }
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-medical-blue rounded-lg flex items-center justify-center mx-auto mb-4">
+            <img 
+              src="/lovable-uploads/71f6a880-e7c2-4282-bd52-7099b8849e30.png" 
+              alt="Home Health ShiftLink Logo" 
+              className="w-12 h-12 object-contain"
+            />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -77,12 +106,24 @@ const Index = () => {
               <Button variant="ghost" onClick={() => navigate('/courses')}>
                 Training Courses
               </Button>
-              <Button variant="outline" onClick={() => navigate('/login')}>
-                Login
-              </Button>
-              <Button onClick={() => navigate('/register')} className="bg-medical-blue hover:bg-blue-800">
-                Sign Up
-              </Button>
+              {user ? (
+                <>
+                  <span className="text-sm text-gray-600">Welcome back!</span>
+                  <Button variant="outline" onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => navigate('/auth')}>
+                    Login
+                  </Button>
+                  <Button onClick={() => navigate('/auth')} className="bg-medical-blue hover:bg-blue-800">
+                    Sign Up
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -119,60 +160,79 @@ const Index = () => {
       </section>
 
       {/* Role Selection Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Role</h3>
-            <p className="text-xl text-gray-600">Select the option that best describes you</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {userRoles.map((role) => {
-              const IconComponent = role.icon;
-              return (
-                <Card 
-                  key={role.id}
-                  className={`cursor-pointer transition-all duration-200 ${role.color} ${
-                    selectedRole === role.id ? 'ring-2 ring-medical-blue shadow-lg' : ''
-                  }`}
-                  onClick={() => setSelectedRole(role.id)}
-                >
-                  <CardHeader className="text-center pb-4">
-                    <div className="mx-auto w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-                      <IconComponent className="w-6 h-6 text-medical-blue" />
-                    </div>
-                    <CardTitle className="text-lg font-semibold text-gray-900">{role.title}</CardTitle>
-                    <CardDescription className="text-sm text-gray-600">{role.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {role.features.map((feature, index) => (
-                        <li key={index} className="flex items-center text-sm text-gray-700">
-                          <Check className="w-4 h-4 text-medical-green mr-2 flex-shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+      {!user && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Role</h3>
+              <p className="text-xl text-gray-600">Select the option that best describes you</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {userRoles.map((role) => {
+                const IconComponent = role.icon;
+                return (
+                  <Card 
+                    key={role.id}
+                    className={`cursor-pointer transition-all duration-200 ${role.color} ${
+                      selectedRole === role.id ? 'ring-2 ring-medical-blue shadow-lg' : ''
+                    }`}
+                    onClick={() => setSelectedRole(role.id)}
+                  >
+                    <CardHeader className="text-center pb-4">
+                      <div className="mx-auto w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
+                        <IconComponent className="w-6 h-6 text-medical-blue" />
+                      </div>
+                      <CardTitle className="text-lg font-semibold text-gray-900">{role.title}</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">{role.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {role.features.map((feature, index) => (
+                          <li key={index} className="flex items-center text-sm text-gray-700">
+                            <Check className="w-4 h-4 text-medical-green mr-2 flex-shrink-0" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
 
-          <div className="text-center">
+            <div className="text-center">
+              <Button 
+                onClick={handleGetStarted}
+                size="lg"
+                className="bg-medical-blue hover:bg-blue-800 text-white px-8 py-3 text-lg"
+              >
+                Get Started Today
+              </Button>
+              <p className="text-sm text-gray-500 mt-4">
+                Join thousands of healthcare professionals already using ShiftLink
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* User Dashboard Link */}
+      {user && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+          <div className="max-w-7xl mx-auto text-center">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Welcome to ShiftLink!</h3>
+            <p className="text-xl text-gray-600 mb-8">You're all set to start using the platform</p>
             <Button 
               onClick={handleGetStarted}
               size="lg"
               className="bg-medical-blue hover:bg-blue-800 text-white px-8 py-3 text-lg"
             >
-              Get Started Today
+              Go to Dashboard
             </Button>
-            <p className="text-sm text-gray-500 mt-4">
-              Join thousands of healthcare professionals already using ShiftLink
-            </p>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* How It Works Section */}
       <HowItWorks />
