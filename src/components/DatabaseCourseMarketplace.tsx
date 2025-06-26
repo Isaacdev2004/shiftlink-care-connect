@@ -50,24 +50,34 @@ const DatabaseCourseMarketplace = () => {
 
   const fetchCourses = async () => {
     try {
-      const { data, error } = await supabase
+      // First get courses with enrollment counts
+      const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
         .select(`
           *,
-          course_enrollments(count),
-          profiles:trainer_id(first_name, last_name)
+          course_enrollments(count)
         `)
         .eq('is_active', true);
 
-      if (error) throw error;
+      if (coursesError) throw coursesError;
 
-      const coursesWithCounts = data?.map(course => ({
+      // Then get trainer profiles separately
+      const trainerIds = coursesData?.map(course => course.trainer_id) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', trainerIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const coursesWithDetails = coursesData?.map(course => ({
         ...course,
         enrollment_count: course.course_enrollments?.[0]?.count || 0,
-        trainer_profile: course.profiles
+        trainer_profile: profilesData?.find(profile => profile.id === course.trainer_id)
       })) || [];
 
-      setCourses(coursesWithCounts);
+      setCourses(coursesWithDetails);
     } catch (error) {
       console.error('Error fetching courses:', error);
       toast({

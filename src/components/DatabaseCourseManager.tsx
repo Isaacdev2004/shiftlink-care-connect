@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Edit, Trash2, Users, Calendar, MapPin, Star, DollarSign, Plus } from 'lucide-react';
+import { Edit, Trash2, Users, Calendar, DollarSign, Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +21,7 @@ interface Course {
   max_students: number;
   is_active: boolean;
   created_at: string;
+  requirements: string;
   enrollment_count?: number;
 }
 
