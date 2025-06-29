@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Edit, Trash2, Users, Calendar, DollarSign, Plus } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Edit, Trash2, Users, Calendar, DollarSign, Plus, BookOpen } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import DatabaseCourseForm from './DatabaseCourseForm';
+import CourseContentManager from './CourseContentManager';
 
 interface Course {
   id: string;
@@ -28,7 +30,10 @@ interface Course {
 const DatabaseCourseManager = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showContentManager, setShowContentManager] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -116,98 +121,136 @@ const DatabaseCourseManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold">Course Management</h3>
-          <p className="text-gray-600">Manage your training courses and track enrollments</p>
-        </div>
-        <Button onClick={() => setShowCreateForm(true)} className="bg-medical-blue hover:bg-blue-800">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Course
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {courses.map((course) => (
-          <Card key={course.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-lg mb-2">{course.title}</CardTitle>
-                  <CardDescription className="line-clamp-2">{course.description}</CardDescription>
-                </div>
-                {getStatusBadge(course)}
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="w-4 h-4 text-green-600" />
-                  <span className="text-xl font-bold text-green-600">${course.price}</span>
-                </div>
-                <div className="text-sm text-gray-500">
-                  {course.duration_hours}h
-                </div>
-              </div>
-
-              <div className="space-y-2 text-sm text-gray-600">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>Category: {course.category}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">Enrollment</span>
-                  <span className="font-medium">{course.enrollment_count}/{course.max_students}</span>
-                </div>
-                <Progress value={(course.enrollment_count / course.max_students) * 100} className="h-2" />
-              </div>
-
-              <div className="flex space-x-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => setEditingCourse(course)}
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Students ({course.enrollment_count})
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => handleDeleteCourse(course.id)}
-                >
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {courses.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No courses yet</h3>
-            <p className="text-gray-600 mb-4">Create your first course to start teaching.</p>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="overview">Course Overview</TabsTrigger>
+          <TabsTrigger value="content">Content Management</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold">Course Management</h3>
+              <p className="text-gray-600">Manage your training courses and track enrollments</p>
+            </div>
             <Button onClick={() => setShowCreateForm(true)} className="bg-medical-blue hover:bg-blue-800">
-              Create Your First Course
+              <Plus className="w-4 h-4 mr-2" />
+              Create Course
             </Button>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {courses.map((course) => (
+              <Card key={course.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg mb-2">{course.title}</CardTitle>
+                      <CardDescription className="line-clamp-2">{course.description}</CardDescription>
+                    </div>
+                    {getStatusBadge(course)}
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <DollarSign className="w-4 h-4 text-green-600" />
+                      <span className="text-xl font-bold text-green-600">${course.price}</span>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {course.duration_hours}h
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-4 h-4" />
+                      <span>Category: {course.category}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Enrollment</span>
+                      <span className="font-medium">{course.enrollment_count}/{course.max_students}</span>
+                    </div>
+                    <Progress value={(course.enrollment_count / course.max_students) * 100} className="h-2" />
+                  </div>
+
+                  <div className="flex space-x-2 pt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => setEditingCourse(course)}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => {
+                        setSelectedCourse(course);
+                        setActiveTab('content');
+                      }}
+                    >
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Content
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Students ({course.enrollment_count})
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleDeleteCourse(course.id)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {courses.length === 0 && (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No courses yet</h3>
+                <p className="text-gray-600 mb-4">Create your first course to start teaching.</p>
+                <Button onClick={() => setShowCreateForm(true)} className="bg-medical-blue hover:bg-blue-800">
+                  Create Your First Course
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="content">
+          {selectedCourse ? (
+            <CourseContentManager course={selectedCourse} />
+          ) : (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Course</h3>
+                <p className="text-gray-600 mb-4">Choose a course from the overview tab to manage its content.</p>
+                <Button onClick={() => setActiveTab('overview')} variant="outline">
+                  Go to Course Overview
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Create Course Dialog */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
