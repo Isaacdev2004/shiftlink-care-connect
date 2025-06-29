@@ -1,16 +1,29 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle, XCircle } from 'lucide-react';
 import DatabaseCourseMarketplace from '@/components/DatabaseCourseMarketplace';
 import DatabaseCourseManager from '@/components/DatabaseCourseManager';
+import PaymentSuccess from '@/components/PaymentSuccess';
 
 const CoursesPage = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('marketplace');
+
+  const success = searchParams.get('success');
+  const canceled = searchParams.get('canceled');
 
   // Check if user is a trainer
   const isTrainer = user?.user_metadata?.role === 'trainer';
+
+  // Show payment success page if success parameter is present
+  if (success === 'true') {
+    return <PaymentSuccess />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -24,6 +37,16 @@ const CoursesPage = () => {
             }
           </p>
         </div>
+
+        {/* Payment status alerts */}
+        {canceled === 'true' && (
+          <Alert className="mb-6 border-orange-200 bg-orange-50">
+            <XCircle className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              Payment was canceled. You can try enrolling again anytime.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {isTrainer ? (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
