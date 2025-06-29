@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,10 +31,13 @@ interface Lesson {
   id: string;
   module_id: string;
   title: string;
+  content: string;
   lesson_type: string;
   duration_minutes: number;
   order_index: number;
   is_published: boolean;
+  video_url: string;
+  attachment_urls: string[];
   quiz_count?: number;
 }
 
