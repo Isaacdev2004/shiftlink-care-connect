@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,16 +34,25 @@ const DatabaseCourseManager = () => {
   const [showContentManager, setShowContentManager] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
+    console.log('DatabaseCourseManager: useEffect triggered, user:', user);
     if (user) {
       fetchCourses();
+    } else {
+      console.log('DatabaseCourseManager: No user found, stopping loading');
+      setLoading(false);
+      setError('Please log in to view your courses');
     }
   }, [user]);
 
   const fetchCourses = async () => {
     try {
+      console.log('DatabaseCourseManager: Fetching courses for user:', user?.id);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('courses')
         .select(`
@@ -53,16 +61,23 @@ const DatabaseCourseManager = () => {
         `)
         .eq('trainer_id', user?.id);
 
-      if (error) throw error;
+      console.log('DatabaseCourseManager: Supabase response:', { data, error });
+
+      if (error) {
+        console.error('DatabaseCourseManager: Supabase error:', error);
+        throw error;
+      }
 
       const coursesWithCounts = data?.map(course => ({
         ...course,
         enrollment_count: course.course_enrollments?.[0]?.count || 0
       })) || [];
 
+      console.log('DatabaseCourseManager: Processed courses:', coursesWithCounts);
       setCourses(coursesWithCounts);
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      console.error('DatabaseCourseManager: Error fetching courses:', error);
+      setError('Failed to load courses. Please try again.');
       toast({
         title: "Error",
         description: "Failed to load courses",
@@ -116,7 +131,40 @@ const DatabaseCourseManager = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">Loading courses...</div>;
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Loading courses...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Please log in to access the course manager.</p>
+          <Button onClick={() => window.location.href = '/login'}>
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
