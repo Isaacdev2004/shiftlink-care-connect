@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Rocket, Template, Copy, Percent, Eye } from 'lucide-react';
+import { Rocket, FileText, Copy, Percent, Eye } from 'lucide-react';
 import CourseTemplateManager from './CourseTemplateManager';
 import CourseDuplicator from './CourseDuplicator';
 import PromotionalTools from './PromotionalTools';
@@ -35,7 +35,7 @@ const MarketingGrowthTools = ({ courses, onCourseCreated }: MarketingGrowthTools
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="templates" className="flex items-center space-x-2">
-            <Template className="w-4 h-4" />
+            <FileText className="w-4 h-4" />
             <span>Templates</span>
           </TabsTrigger>
           <TabsTrigger value="duplication" className="flex items-center space-x-2">
