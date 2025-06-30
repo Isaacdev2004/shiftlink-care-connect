@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,7 @@ import RevenueAnalytics from '@/components/RevenueAnalytics';
 import CourseComparison from '@/components/CourseComparison';
 import StudentRetentionMetrics from '@/components/StudentRetentionMetrics';
 import ExportReports from '@/components/ExportReports';
+import MarketingGrowthTools from '@/components/MarketingGrowthTools';
 
 const TrainerDashboard = () => {
   const { user, loading } = useAuth();
@@ -106,7 +106,7 @@ const TrainerDashboard = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="progress">Progress</TabsTrigger>
@@ -114,6 +114,7 @@ const TrainerDashboard = () => {
             <TabsTrigger value="comparison">Compare</TabsTrigger>
             <TabsTrigger value="retention">Retention</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="marketing">Marketing</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
           
@@ -146,6 +147,13 @@ const TrainerDashboard = () => {
 
           <TabsContent value="reports" className="mt-6">
             <ExportReports />
+          </TabsContent>
+
+          <TabsContent value="marketing" className="mt-6">
+            <MarketingGrowthTools 
+              courses={[]} 
+              onCourseCreated={() => setRefreshCourses(prev => prev + 1)} 
+            />
           </TabsContent>
           
           <TabsContent value="profile" className="mt-6">
