@@ -1,66 +1,100 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Users, DollarSign, Award, TrendingUp } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Plus, BookOpen, TrendingUp } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 import TrainerProfile from '@/components/TrainerProfile';
 import DatabaseCourseManager from '@/components/DatabaseCourseManager';
+import TrainerStats from '@/components/TrainerStats';
+import CourseCreationWizard from '@/components/CourseCreationWizard';
+import CourseContentManager from '@/components/CourseContentManager';
 
 const TrainerDashboard = () => {
+  const { user, loading } = useAuth();
+  const [showCourseWizard, setShowCourseWizard] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
+  const [refreshCourses, setRefreshCourses] = useState(0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  const handleCourseCreated = (courseId: string) => {
+    setShowCourseWizard(false);
+    setRefreshCourses(prev => prev + 1);
+    // Optionally, you could automatically select the newly created course
+    // for content management
+  };
+
+  const handleManageCourse = (course: { id: string; title: string }) => {
+    setSelectedCourse(course);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Trainer Dashboard</h1>
-          <p className="text-gray-600">Manage your courses, track students, and grow your training business</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Trainer Dashboard</h1>
+              <p className="text-gray-600">Manage your courses, track students, and grow your training business</p>
+            </div>
+            
+            <div className="flex space-x-3">
+              <Button 
+                onClick={() => setShowCourseWizard(true)}
+                className="bg-medical-blue hover:bg-blue-800 flex items-center space-x-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Course</span>
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">+2 from last month</p>
-            </CardContent>
-          </Card>
+        {/* Real-time Stats */}
+        <TrainerStats />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Students</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+        {/* Course Content Manager */}
+        {selectedCourse && (
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center space-x-2">
+                  <BookOpen className="w-5 h-5" />
+                  <span>Course Content Manager</span>
+                </CardTitle>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedCourse(null)}
+                >
+                  Close
+                </Button>
+              </div>
+              <CardDescription>
+                Managing content for: <strong>{selectedCourse.title}</strong>
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">248</div>
-              <p className="text-xs text-muted-foreground">+18 from last month</p>
+              <CourseContentManager course={selectedCourse} />
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$3,240</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Certificates Issued</CardTitle>
-              <Award className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">156</div>
-              <p className="text-xs text-muted-foreground">+23 from last month</p>
-            </CardContent>
-          </Card>
-        </div>
+        )}
 
         <Tabs defaultValue="courses" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -70,7 +104,10 @@ const TrainerDashboard = () => {
           </TabsList>
           
           <TabsContent value="courses" className="mt-6">
-            <DatabaseCourseManager />
+            <DatabaseCourseManager 
+              key={refreshCourses}
+              onManageCourse={handleManageCourse}
+            />
           </TabsContent>
           
           <TabsContent value="profile" className="mt-6">
@@ -88,12 +125,28 @@ const TrainerDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <p className="text-gray-500">Analytics dashboard coming soon...</p>
+                  <p className="text-gray-500">Advanced analytics dashboard coming soon...</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    View detailed insights about your courses, student progress, and revenue trends.
+                  </p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Course Creation Wizard Dialog */}
+        <Dialog open={showCourseWizard} onOpenChange={setShowCourseWizard}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Course</DialogTitle>
+            </DialogHeader>
+            <CourseCreationWizard
+              onCourseCreated={handleCourseCreated}
+              onCancel={() => setShowCourseWizard(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
