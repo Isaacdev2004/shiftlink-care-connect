@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, BookOpen, TrendingUp } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, Users, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import TrainerProfile from '@/components/TrainerProfile';
@@ -12,6 +12,8 @@ import DatabaseCourseManager from '@/components/DatabaseCourseManager';
 import TrainerStats from '@/components/TrainerStats';
 import CourseCreationWizard from '@/components/CourseCreationWizard';
 import CourseContentManager from '@/components/CourseContentManager';
+import CourseAnalyticsDashboard from '@/components/CourseAnalyticsDashboard';
+import StudentProgressCharts from '@/components/StudentProgressCharts';
 
 const TrainerDashboard = () => {
   const { user, loading } = useAuth();
@@ -37,8 +39,6 @@ const TrainerDashboard = () => {
   const handleCourseCreated = (courseId: string) => {
     setShowCourseWizard(false);
     setRefreshCourses(prev => prev + 1);
-    // Optionally, you could automatically select the newly created course
-    // for content management
   };
 
   const handleManageCourse = (course: { id: string; title: string }) => {
@@ -97,10 +97,12 @@ const TrainerDashboard = () => {
         )}
 
         <Tabs defaultValue="courses" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="courses">Course Management</TabsTrigger>
-            <TabsTrigger value="profile">Profile & Settings</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="progress">Student Progress</TabsTrigger>
+            <TabsTrigger value="profile">Profile & Settings</TabsTrigger>
+            <TabsTrigger value="engagement">Engagement</TabsTrigger>
           </TabsList>
           
           <TabsContent value="courses" className="mt-6">
@@ -109,26 +111,88 @@ const TrainerDashboard = () => {
               onManageCourse={handleManageCourse}
             />
           </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            <CourseAnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="progress" className="mt-6">
+            <StudentProgressCharts />
+          </TabsContent>
           
           <TabsContent value="profile" className="mt-6">
             <TrainerProfile />
           </TabsContent>
           
-          <TabsContent value="analytics" className="mt-6">
+          <TabsContent value="engagement" className="mt-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5" />
-                  <span>Performance Analytics</span>
+                  <MessageCircle className="w-5 h-5" />
+                  <span>Student Engagement Tools</span>
                 </CardTitle>
-                <CardDescription>Track your training business performance</CardDescription>
+                <CardDescription>Communicate with students and track engagement</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Advanced analytics dashboard coming soon...</p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    View detailed insights about your courses, student progress, and revenue trends.
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <MessageCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">Messaging System</h3>
+                      <p className="text-sm text-gray-600 mb-4">Send messages and announcements to your students</p>
+                      <Button variant="outline" className="w-full">
+                        Open Messages
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <Users className="w-12 h-12 text-green-600 mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">Student Feedback</h3>
+                      <p className="text-sm text-gray-600 mb-4">View and respond to student reviews and feedback</p>
+                      <Button variant="outline" className="w-full">
+                        View Feedback
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <TrendingUp className="w-12 h-12 text-purple-600 mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">Progress Alerts</h3>
+                      <p className="text-sm text-gray-600 mb-4">Set up automated notifications and reminders</p>
+                      <Button variant="outline" className="w-full">
+                        Configure Alerts
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-8 p-6 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">🚀 Enhanced Engagement Features</h4>
+                  <p className="text-sm text-blue-800 mb-4">
+                    The messaging system, feedback collection, and automated notifications are now set up in your database. 
+                    The engagement tools help you maintain better communication with your students and track their progress more effectively.
                   </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                    <div>
+                      <strong>✅ Student Progress Tracking:</strong>
+                      <ul className="ml-4 mt-1 space-y-1">
+                        <li>• Detailed lesson completion tracking</li>
+                        <li>• Time spent analytics</li>
+                        <li>• Quiz performance monitoring</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <strong>✅ Communication Tools:</strong>
+                      <ul className="ml-4 mt-1 space-y-1">
+                        <li>• Direct messaging with students</li>
+                        <li>• Course announcements</li>
+                        <li>• Automated reminders</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

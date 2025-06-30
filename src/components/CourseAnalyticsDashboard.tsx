@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Users, DollarSign, Star, BookOpen, Award } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Star, BookOpen, Award, MessageCircle, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -17,6 +17,11 @@ interface CourseAnalytics {
   averageRating: number;
   certificatesIssued: number;
   isActive: boolean;
+  // New engagement metrics
+  totalMessages: number;
+  avgTimeSpent: number;
+  feedbackCount: number;
+  averageProgress: number;
 }
 
 const CourseAnalyticsDashboard = () => {
@@ -54,6 +59,27 @@ const CourseAnalyticsDashboard = () => {
 
       if (coursesError) throw coursesError;
 
+      // Get engagement data for all courses
+      const courseIds = courses?.map(c => c.id) || [];
+      
+      // Fetch messages data
+      const { data: messagesData } = await supabase
+        .from('messages')
+        .select('course_id')
+        .in('course_id', courseIds);
+
+      // Fetch feedback data
+      const { data: feedbackData } = await supabase
+        .from('student_feedback')
+        .select('course_id, rating')
+        .in('course_id', courseIds);
+
+      // Fetch progress data
+      const { data: progressData } = await supabase
+        .from('student_lesson_progress')
+        .select('course_id, progress_percentage, time_spent_minutes')
+        .in('course_id', courseIds);
+
       const analyticsData: CourseAnalytics[] = courses?.map(course => {
         const enrollments = course.course_enrollments || [];
         const certificates = course.certificates || [];
@@ -64,6 +90,23 @@ const CourseAnalyticsDashboard = () => {
         const completionRate = totalStudents > 0 ? (completedStudents / totalStudents) * 100 : 0;
         const totalRevenue = paidEnrollments.reduce((sum, e) => sum + (e.amount_paid || 0), 0);
 
+        // Calculate engagement metrics
+        const courseMessages = messagesData?.filter(m => m.course_id === course.id) || [];
+        const courseFeedback = feedbackData?.filter(f => f.course_id === course.id) || [];
+        const courseProgress = progressData?.filter(p => p.course_id === course.id) || [];
+        
+        const avgRating = courseFeedback.length > 0 
+          ? courseFeedback.reduce((sum, f) => sum + (f.rating || 0), 0) / courseFeedback.length 
+          : 0;
+        
+        const avgTimeSpent = courseProgress.length > 0
+          ? courseProgress.reduce((sum, p) => sum + (p.time_spent_minutes || 0), 0) / courseProgress.length
+          : 0;
+
+        const avgProgress = courseProgress.length > 0
+          ? courseProgress.reduce((sum, p) => sum + (p.progress_percentage || 0), 0) / courseProgress.length
+          : 0;
+
         return {
           id: course.id,
           title: course.title,
@@ -71,9 +114,13 @@ const CourseAnalyticsDashboard = () => {
           completedStudents,
           completionRate,
           totalRevenue: Number(totalRevenue),
-          averageRating: 4.2, // Placeholder - would need feedback system
+          averageRating: avgRating,
           certificatesIssued: certificates.length,
-          isActive: course.is_active
+          isActive: course.is_active,
+          totalMessages: courseMessages.length,
+          avgTimeSpent: Math.round(avgTimeSpent),
+          feedbackCount: courseFeedback.length,
+          averageProgress: Math.round(avgProgress)
         };
       }) || [];
 
@@ -105,8 +152,8 @@ const CourseAnalyticsDashboard = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-2">Course Analytics</h3>
-        <p className="text-gray-600">Detailed performance metrics for your courses</p>
+        <h3 className="text-lg font-semibold mb-2">Course Analytics & Engagement</h3>
+        <p className="text-gray-600">Detailed performance and engagement metrics for your courses</p>
       </div>
 
       {analytics.length === 0 ? (
@@ -157,11 +204,41 @@ const CourseAnalyticsDashboard = () => {
                   <Progress value={course.completionRate} className="h-2" />
                 </div>
 
+                {/* Average Progress */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Average Progress</span>
+                    <span className="font-medium">{course.averageProgress}%</span>
+                  </div>
+                  <Progress value={course.averageProgress} className="h-2 bg-blue-100">
+                    <div 
+                      className="h-full bg-blue-500 transition-all" 
+                      style={{ width: `${course.averageProgress}%` }}
+                    />
+                  </Progress>
+                </div>
+
+                {/* Engagement Metrics */}
+                <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t">
+                  <div className="flex items-center space-x-1">
+                    <MessageCircle className="w-4 h-4 text-purple-600" />
+                    <span>{course.totalMessages} msgs</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <TrendingUp className="w-4 h-4 text-orange-600" />
+                    <span>{course.avgTimeSpent}m avg</span>
+                  </div>
+                </div>
+
                 {/* Additional Metrics */}
                 <div className="flex justify-between items-center text-sm pt-2 border-t">
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span>{course.averageRating.toFixed(1)}</span>
+                    <span>{course.averageRating > 0 ? course.averageRating.toFixed(1) : 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Heart className="w-4 h-4 text-red-500" />
+                    <span>{course.feedbackCount} reviews</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Award className="w-4 h-4 text-purple-600" />
