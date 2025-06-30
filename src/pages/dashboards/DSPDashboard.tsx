@@ -8,6 +8,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import StudentLearningInterface from '@/components/StudentLearningInterface';
 import DatabaseCourseMarketplace from '@/components/DatabaseCourseMarketplace';
+import StudentStats from '@/components/StudentStats';
+import StudentCertificates from '@/components/StudentCertificates';
+import StudentProgressCharts from '@/components/StudentProgressCharts';
 
 const DSPDashboard = () => {
   const { user, loading } = useAuth();
@@ -26,6 +29,14 @@ const DSPDashboard = () => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+
+  const handleBrowseCourses = () => {
+    // Scroll to the Browse Courses tab
+    const tabsList = document.querySelector('[data-tab="courses"]');
+    if (tabsList) {
+      (tabsList as HTMLElement).click();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,54 +60,10 @@ const DSPDashboard = () => {
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Enrolled Courses</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground">Active enrollments</p>
-            </CardContent>
-          </Card>
+        {/* Real-time Stats */}
+        <StudentStats />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Hours Completed</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">24.5</div>
-              <p className="text-xs text-muted-foreground">This month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Certificates Earned</CardTitle>
-              <Award className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">2</div>
-              <p className="text-xs text-muted-foreground">+1 this month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">87%</div>
-              <p className="text-xs text-muted-foreground">Quiz average</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
+        {/* Quick Actions with proper click handlers */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/learning'}>
             <CardHeader>
@@ -111,7 +78,7 @@ const DSPDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={handleBrowseCourses}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Browse Course Catalog</span>
@@ -128,7 +95,7 @@ const DSPDashboard = () => {
         <Tabs defaultValue="learning" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="learning">My Learning</TabsTrigger>
-            <TabsTrigger value="courses">Browse Courses</TabsTrigger>
+            <TabsTrigger value="courses" data-tab="courses">Browse Courses</TabsTrigger>
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
             <TabsTrigger value="progress">Progress Reports</TabsTrigger>
           </TabsList>
@@ -142,44 +109,11 @@ const DSPDashboard = () => {
           </TabsContent>
           
           <TabsContent value="certificates" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Award className="w-5 h-5" />
-                  <span>My Certificates</span>
-                </CardTitle>
-                <CardDescription>View and download your earned certificates</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Award className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No certificates yet</h3>
-                  <p className="text-gray-500 mb-4">Complete courses to earn your first certificate!</p>
-                  <Button onClick={() => window.location.href = '/learning'} className="bg-medical-blue hover:bg-blue-800">
-                    Start Learning
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <StudentCertificates />
           </TabsContent>
           
           <TabsContent value="progress" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5" />
-                  <span>Learning Progress</span>
-                </CardTitle>
-                <CardDescription>Detailed progress analytics and reports</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Progress tracking coming soon</h3>
-                  <p className="text-gray-500">Detailed analytics and progress reports will be available here.</p>
-                </div>
-              </CardContent>
-            </Card>
+            <StudentProgressCharts />
           </TabsContent>
         </Tabs>
       </div>
