@@ -18,6 +18,7 @@ interface Course {
   duration_hours: number;
   max_students: number;
   category: string;
+  requirements: string;
   is_active: boolean;
   created_at: string;
   enrolled_count?: number;
