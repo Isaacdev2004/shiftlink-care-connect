@@ -90,7 +90,13 @@ export const useTransportation = () => {
         .from('ride_requests')
         .insert({
           requester_id: user.id,
-          ...requestData
+          pickup_address: requestData.pickup_address || '',
+          destination_address: requestData.destination_address || '',
+          ride_type: requestData.ride_type || '',
+          requested_pickup_time: requestData.requested_pickup_time || '',
+          passenger_count: requestData.passenger_count || 1,
+          special_requirements: requestData.special_requirements,
+          status: 'pending'
         });
 
       if (error) throw error;
