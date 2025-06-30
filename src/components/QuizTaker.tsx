@@ -44,12 +44,12 @@ const QuizTaker = ({ lessonId, lessonTitle, courseId, onBack, onComplete }: Quiz
 
       if (error) throw error;
       
-      // Transform the data to match our Question interface
+      // Transform the data to match our Question interface with proper type conversion
       const transformedQuestions = data?.map(q => ({
         id: q.id,
         question_text: q.question_text,
         question_type: q.question_type,
-        options: Array.isArray(q.options) ? q.options : [],
+        options: Array.isArray(q.options) ? q.options.map(option => String(option)) : [],
         correct_answer: q.correct_answer
       })) || [];
       
