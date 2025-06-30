@@ -11,18 +11,9 @@ import { Upload, FileText, CheckCircle, AlertCircle, X, Download, Calendar } fro
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface UploadedCertificate {
-  id: string;
-  certificate_name: string;
-  certificate_type: string;
-  file_url: string;
-  upload_date: string;
-  expiry_date: string | null;
-  status: 'pending' | 'approved' | 'rejected';
-  rejection_reason?: string;
-  verified_at: string | null;
-}
+type UploadedCertificate = Tables<'uploaded_certificates'>;
 
 const CertificateUpload = () => {
   const { user } = useAuth();
@@ -118,15 +109,18 @@ const CertificateUpload = () => {
 
       console.log('Uploading file to:', filePath);
 
+      // Simulate upload progress since Supabase doesn't support onUploadProgress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+
       // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('certificates')
-        .upload(filePath, selectedFile, {
-          onUploadProgress: (progress) => {
-            const percentage = (progress.loaded / progress.total) * 100;
-            setUploadProgress(percentage);
-          }
-        });
+        .upload(filePath, selectedFile);
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       if (uploadError) throw uploadError;
 
