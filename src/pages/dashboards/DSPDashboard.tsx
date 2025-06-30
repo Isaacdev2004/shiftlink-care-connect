@@ -1,185 +1,107 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Calendar, MapPin, DollarSign, Users, AlertTriangle, Upload, Clock } from 'lucide-react';
-import CredentialAlerts from '@/components/CredentialAlerts';
-import CredentialTracker from '@/components/CredentialTracker';
-import CertificateUpload from '@/components/CertificateUpload';
-import EVVClockSystem from '@/components/EVVClockSystem';
+import { BookOpen, Users, Clock, Award, TrendingUp, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import StudentLearningInterface from '@/components/StudentLearningInterface';
 
 const DSPDashboard = () => {
-  const navigate = useNavigate();
-  
-  const [upcomingShifts] = useState([
-    {
-      id: '1',
-      facility: 'Sunrise Care Center',
-      date: '2024-06-15',
-      time: '7:00 AM - 3:00 PM',
-      rate: '$22/hr',
-      status: 'confirmed'
-    },
-    {
-      id: '2',
-      facility: 'Meadowbrook Assisted Living',
-      date: '2024-06-16',
-      time: '3:00 PM - 11:00 PM',
-      rate: '$24/hr',
-      status: 'pending'
-    }
-  ]);
-
-  const [stats] = useState({
-    totalShifts: 45,
-    totalEarnings: 8750.25,
-    avgRating: 4.8,
-    completionRate: 96
-  });
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">DSP Dashboard</h1>
-              <p className="text-gray-600">Manage your shifts, credentials, and training</p>
-            </div>
-            <Button 
-              className="bg-medical-blue hover:bg-blue-800"
-              onClick={() => navigate('/shifts')}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Browse Shifts
-            </Button>
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Student Dashboard</h1>
+          <p className="text-gray-600">Track your learning progress and continue your training</p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Overview */}
+        {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Shifts</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.totalShifts}</p>
-                </div>
-                <Calendar className="w-8 h-8 text-blue-500" />
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Enrolled Courses</CardTitle>
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">3</div>
+              <p className="text-xs text-muted-foreground">Active enrollments</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Earnings</p>
-                  <p className="text-2xl font-bold text-green-600">${stats.totalEarnings.toLocaleString()}</p>
-                </div>
-                <DollarSign className="w-8 h-8 text-green-500" />
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Hours Completed</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">24.5</div>
+              <p className="text-xs text-muted-foreground">This month</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Average Rating</p>
-                  <p className="text-2xl font-bold text-yellow-600">{stats.avgRating}</p>
-                </div>
-                <Users className="w-8 h-8 text-yellow-500" />
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Certificates Earned</CardTitle>
+              <Award className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">2</div>
+              <p className="text-xs text-muted-foreground">+1 this month</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Completion Rate</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.completionRate}%</p>
-                </div>
-                <AlertTriangle className="w-8 h-8 text-purple-500" />
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">87%</div>
+              <p className="text-xs text-muted-foreground">Quiz average</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="shifts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="shifts">My Shifts</TabsTrigger>
-            <TabsTrigger value="clockin">Clock In/Out</TabsTrigger>
-            <TabsTrigger value="credentials">Credentials</TabsTrigger>
-            <TabsTrigger value="tracking">Credential Tracking</TabsTrigger>
+        <Tabs defaultValue="learning" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="learning">My Learning</TabsTrigger>
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
-            <TabsTrigger value="training">Training</TabsTrigger>
+            <TabsTrigger value="progress">Progress Reports</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="shifts">
+          
+          <TabsContent value="learning" className="mt-6">
+            <StudentLearningInterface />
+          </TabsContent>
+          
+          <TabsContent value="certificates" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Upcoming Shifts</CardTitle>
-                <CardDescription>View and manage your scheduled shifts</CardDescription>
+                <CardTitle className="flex items-center space-x-2">
+                  <Award className="w-5 h-5" />
+                  <span>My Certificates</span>
+                </CardTitle>
+                <CardDescription>View and download your earned certificates</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {upcomingShifts.map((shift) => (
-                    <div key={shift.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{shift.facility}</h4>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>{shift.date}</span>
-                          </div>
-                          <span>{shift.time}</span>
-                          <span className="font-medium text-green-600">{shift.rate}</span>
-                        </div>
-                      </div>
-                      <Badge variant={shift.status === 'confirmed' ? 'default' : 'secondary'}>
-                        {shift.status}
-                      </Badge>
-                    </div>
-                  ))}
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Certificate management coming soon...</p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-
-          <TabsContent value="clockin">
-            <EVVClockSystem />
-          </TabsContent>
-
-          <TabsContent value="credentials">
-            <CredentialAlerts />
-          </TabsContent>
-
-          <TabsContent value="tracking">
-            <CredentialTracker />
-          </TabsContent>
-
-          <TabsContent value="certificates">
-            <CertificateUpload />
-          </TabsContent>
-
-          <TabsContent value="training">
+          
+          <TabsContent value="progress" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Training Courses</CardTitle>
-                <CardDescription>Browse and enroll in training courses</CardDescription>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="w-5 h-5" />
+                  <span>Learning Progress</span>
+                </CardTitle>
+                <CardDescription>Detailed progress analytics and reports</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Training course enrollment coming soon</p>
+                  <p className="text-gray-500">Progress reports coming soon...</p>
                 </div>
               </CardContent>
             </Card>
