@@ -18,6 +18,7 @@ import CourseComparison from '@/components/CourseComparison';
 import StudentRetentionMetrics from '@/components/StudentRetentionMetrics';
 import ExportReports from '@/components/ExportReports';
 import MarketingGrowthTools from '@/components/MarketingGrowthTools';
+import EnhancedLearningExperience from '@/components/EnhancedLearningExperience';
 
 const TrainerDashboard = () => {
   const { user, loading } = useAuth();
@@ -106,7 +107,7 @@ const TrainerDashboard = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="progress">Progress</TabsTrigger>
@@ -115,6 +116,7 @@ const TrainerDashboard = () => {
             <TabsTrigger value="retention">Retention</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="marketing">Marketing</TabsTrigger>
+            <TabsTrigger value="learning">Learning</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
           
@@ -154,6 +156,10 @@ const TrainerDashboard = () => {
               courses={[]} 
               onCourseCreated={() => setRefreshCourses(prev => prev + 1)} 
             />
+          </TabsContent>
+
+          <TabsContent value="learning" className="mt-6">
+            <EnhancedLearningExperience />
           </TabsContent>
           
           <TabsContent value="profile" className="mt-6">
