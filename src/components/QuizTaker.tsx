@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +43,17 @@ const QuizTaker = ({ lessonId, lessonTitle, courseId, onBack, onComplete }: Quiz
         .order('id');
 
       if (error) throw error;
-      setQuestions(data || []);
+      
+      // Transform the data to match our Question interface
+      const transformedQuestions = data?.map(q => ({
+        id: q.id,
+        question_text: q.question_text,
+        question_type: q.question_type,
+        options: Array.isArray(q.options) ? q.options : [],
+        correct_answer: q.correct_answer
+      })) || [];
+      
+      setQuestions(transformedQuestions);
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast({
