@@ -9,6 +9,74 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agency_transportation_requests: {
+        Row: {
+          agency_id: string
+          assigned_transportation_company_id: string | null
+          client_name: string
+          created_at: string
+          destination_address: string
+          estimated_fare: number | null
+          id: string
+          is_recurring: boolean | null
+          notes: string | null
+          passenger_count: number | null
+          pickup_address: string
+          recurring_schedule: Json | null
+          requested_pickup_time: string
+          special_needs: string | null
+          status: string
+          updated_at: string
+          wheelchair_accessible: boolean | null
+        }
+        Insert: {
+          agency_id: string
+          assigned_transportation_company_id?: string | null
+          client_name: string
+          created_at?: string
+          destination_address: string
+          estimated_fare?: number | null
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          passenger_count?: number | null
+          pickup_address: string
+          recurring_schedule?: Json | null
+          requested_pickup_time: string
+          special_needs?: string | null
+          status?: string
+          updated_at?: string
+          wheelchair_accessible?: boolean | null
+        }
+        Update: {
+          agency_id?: string
+          assigned_transportation_company_id?: string | null
+          client_name?: string
+          created_at?: string
+          destination_address?: string
+          estimated_fare?: number | null
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          passenger_count?: number | null
+          pickup_address?: string
+          recurring_schedule?: Json | null
+          requested_pickup_time?: string
+          special_needs?: string | null
+          status?: string
+          updated_at?: string
+          wheelchair_accessible?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_transportation_request_assigned_transportation_comp_fkey"
+            columns: ["assigned_transportation_company_id"]
+            isOneToOne: false
+            referencedRelation: "transportation_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificates: {
         Row: {
           certificate_number: string
@@ -261,6 +329,92 @@ export type Database = {
         }
         Relationships: []
       }
+      drivers: {
+        Row: {
+          background_check_date: string | null
+          background_check_status: string
+          created_at: string
+          current_location_lat: number | null
+          current_location_lng: number | null
+          driver_email: string
+          driver_name: string
+          driver_phone: string
+          id: string
+          is_active: boolean
+          is_available: boolean
+          license_expiry_date: string
+          license_number: string
+          rating: number | null
+          total_rides: number | null
+          transportation_company_id: string | null
+          updated_at: string
+          vehicle_insurance_expiry: string | null
+          vehicle_insurance_policy: string | null
+          vehicle_license_plate: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          background_check_date?: string | null
+          background_check_status?: string
+          created_at?: string
+          current_location_lat?: number | null
+          current_location_lng?: number | null
+          driver_email: string
+          driver_name: string
+          driver_phone: string
+          id?: string
+          is_active?: boolean
+          is_available?: boolean
+          license_expiry_date: string
+          license_number: string
+          rating?: number | null
+          total_rides?: number | null
+          transportation_company_id?: string | null
+          updated_at?: string
+          vehicle_insurance_expiry?: string | null
+          vehicle_insurance_policy?: string | null
+          vehicle_license_plate?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          background_check_date?: string | null
+          background_check_status?: string
+          created_at?: string
+          current_location_lat?: number | null
+          current_location_lng?: number | null
+          driver_email?: string
+          driver_name?: string
+          driver_phone?: string
+          id?: string
+          is_active?: boolean
+          is_available?: boolean
+          license_expiry_date?: string
+          license_number?: string
+          rating?: number | null
+          total_rides?: number | null
+          transportation_company_id?: string | null
+          updated_at?: string
+          vehicle_insurance_expiry?: string | null
+          vehicle_insurance_policy?: string | null
+          vehicle_license_plate?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_transportation_company_id_fkey"
+            columns: ["transportation_company_id"]
+            isOneToOne: false
+            referencedRelation: "transportation_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -397,6 +551,136 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ride_ratings: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          id: string
+          rater_id: string
+          rater_type: string
+          rating: number
+          ride_request_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          rater_id: string
+          rater_type: string
+          rating: number
+          ride_request_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          rater_id?: string
+          rater_type?: string
+          rating?: number
+          ride_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_ratings_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ride_requests: {
+        Row: {
+          accepted_at: string | null
+          assigned_driver_id: string | null
+          base_fare: number | null
+          created_at: string
+          destination_address: string
+          destination_lat: number | null
+          destination_lng: number | null
+          dropoff_completed_at: string | null
+          estimated_distance_miles: number | null
+          estimated_duration_minutes: number | null
+          id: string
+          passenger_count: number | null
+          pickup_address: string
+          pickup_completed_at: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          platform_fee: number | null
+          requested_pickup_time: string
+          requester_id: string
+          ride_type: string
+          shift_id: string | null
+          special_requirements: string | null
+          status: string
+          total_fare: number | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_driver_id?: string | null
+          base_fare?: number | null
+          created_at?: string
+          destination_address: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          dropoff_completed_at?: string | null
+          estimated_distance_miles?: number | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          passenger_count?: number | null
+          pickup_address: string
+          pickup_completed_at?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          platform_fee?: number | null
+          requested_pickup_time: string
+          requester_id: string
+          ride_type: string
+          shift_id?: string | null
+          special_requirements?: string | null
+          status?: string
+          total_fare?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_driver_id?: string | null
+          base_fare?: number | null
+          created_at?: string
+          destination_address?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          dropoff_completed_at?: string | null
+          estimated_distance_miles?: number | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          passenger_count?: number | null
+          pickup_address?: string
+          pickup_completed_at?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          platform_fee?: number | null
+          requested_pickup_time?: string
+          requester_id?: string
+          ride_type?: string
+          shift_id?: string | null
+          special_requirements?: string | null
+          status?: string
+          total_fare?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_requests_assigned_driver_id_fkey"
+            columns: ["assigned_driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
         ]
@@ -621,6 +905,126 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transportation_companies: {
+        Row: {
+          address: string | null
+          city: string
+          commission_rate: number
+          company_name: string
+          contact_email: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          insurance_expiry_date: string | null
+          insurance_policy_number: string | null
+          insurance_provider: string | null
+          is_active: boolean
+          license_number: string | null
+          rating: number | null
+          state: string
+          total_rides: number | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string
+          commission_rate?: number
+          company_name: string
+          contact_email: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          insurance_expiry_date?: string | null
+          insurance_policy_number?: string | null
+          insurance_provider?: string | null
+          is_active?: boolean
+          license_number?: string | null
+          rating?: number | null
+          state?: string
+          total_rides?: number | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string
+          commission_rate?: number
+          company_name?: string
+          contact_email?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          insurance_expiry_date?: string | null
+          insurance_policy_number?: string | null
+          insurance_provider?: string | null
+          is_active?: boolean
+          license_number?: string | null
+          rating?: number | null
+          state?: string
+          total_rides?: number | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      transportation_quotes: {
+        Row: {
+          agency_request_id: string | null
+          availability_notes: string | null
+          created_at: string
+          estimated_duration: string | null
+          id: string
+          quote_valid_until: string | null
+          quoted_price: number
+          service_details: string | null
+          status: string
+          transportation_company_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          agency_request_id?: string | null
+          availability_notes?: string | null
+          created_at?: string
+          estimated_duration?: string | null
+          id?: string
+          quote_valid_until?: string | null
+          quoted_price: number
+          service_details?: string | null
+          status?: string
+          transportation_company_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agency_request_id?: string | null
+          availability_notes?: string | null
+          created_at?: string
+          estimated_duration?: string | null
+          id?: string
+          quote_valid_until?: string | null
+          quoted_price?: number
+          service_details?: string | null
+          status?: string
+          transportation_company_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transportation_quotes_agency_request_id_fkey"
+            columns: ["agency_request_id"]
+            isOneToOne: false
+            referencedRelation: "agency_transportation_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transportation_quotes_transportation_company_id_fkey"
+            columns: ["transportation_company_id"]
+            isOneToOne: false
+            referencedRelation: "transportation_companies"
             referencedColumns: ["id"]
           },
         ]

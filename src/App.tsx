@@ -17,6 +17,7 @@ import CountyDashboard from "./pages/dashboards/CountyDashboard";
 import CoursesPage from "./pages/CoursesPage";
 import LearningPage from "./pages/LearningPage";
 import ShiftBrowserPage from "./pages/ShiftBrowserPage";
+import TransportationPage from "./pages/TransportationPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/courses" element={<CoursesPage />} />
             <Route path="/learning" element={<LearningPage />} />
             <Route path="/shifts" element={<ShiftBrowserPage />} />
+            <Route path="/transportation" element={<TransportationPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/terms" element={<Terms />} />
