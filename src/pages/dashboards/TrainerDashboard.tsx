@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, BookOpen, TrendingUp, Users, MessageCircle } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, Users, MessageCircle, BarChart3, FileText, Target } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import TrainerProfile from '@/components/TrainerProfile';
@@ -14,6 +14,10 @@ import CourseCreationWizard from '@/components/CourseCreationWizard';
 import CourseContentManager from '@/components/CourseContentManager';
 import CourseAnalyticsDashboard from '@/components/CourseAnalyticsDashboard';
 import StudentProgressCharts from '@/components/StudentProgressCharts';
+import RevenueAnalytics from '@/components/RevenueAnalytics';
+import CourseComparison from '@/components/CourseComparison';
+import StudentRetentionMetrics from '@/components/StudentRetentionMetrics';
+import ExportReports from '@/components/ExportReports';
 
 const TrainerDashboard = () => {
   const { user, loading } = useAuth();
@@ -97,12 +101,15 @@ const TrainerDashboard = () => {
         )}
 
         <Tabs defaultValue="courses" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="courses">Course Management</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-8">
+            <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="progress">Student Progress</TabsTrigger>
-            <TabsTrigger value="profile">Profile & Settings</TabsTrigger>
-            <TabsTrigger value="engagement">Engagement</TabsTrigger>
+            <TabsTrigger value="progress">Progress</TabsTrigger>
+            <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            <TabsTrigger value="comparison">Compare</TabsTrigger>
+            <TabsTrigger value="retention">Retention</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
           
           <TabsContent value="courses" className="mt-6">
@@ -119,85 +126,112 @@ const TrainerDashboard = () => {
           <TabsContent value="progress" className="mt-6">
             <StudentProgressCharts />
           </TabsContent>
+
+          <TabsContent value="revenue" className="mt-6">
+            <RevenueAnalytics />
+          </TabsContent>
+
+          <TabsContent value="comparison" className="mt-6">
+            <CourseComparison />
+          </TabsContent>
+
+          <TabsContent value="retention" className="mt-6">
+            <StudentRetentionMetrics />
+          </TabsContent>
+
+          <TabsContent value="reports" className="mt-6">
+            <ExportReports />
+          </TabsContent>
           
           <TabsContent value="profile" className="mt-6">
             <TrainerProfile />
           </TabsContent>
-          
-          <TabsContent value="engagement" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <MessageCircle className="w-5 h-5" />
-                  <span>Student Engagement Tools</span>
-                </CardTitle>
-                <CardDescription>Communicate with students and track engagement</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <MessageCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                      <h3 className="font-medium mb-2">Messaging System</h3>
-                      <p className="text-sm text-gray-600 mb-4">Send messages and announcements to your students</p>
-                      <Button variant="outline" className="w-full">
-                        Open Messages
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Users className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                      <h3 className="font-medium mb-2">Student Feedback</h3>
-                      <p className="text-sm text-gray-600 mb-4">View and respond to student reviews and feedback</p>
-                      <Button variant="outline" className="w-full">
-                        View Feedback
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <TrendingUp className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-                      <h3 className="font-medium mb-2">Progress Alerts</h3>
-                      <p className="text-sm text-gray-600 mb-4">Set up automated notifications and reminders</p>
-                      <Button variant="outline" className="w-full">
-                        Configure Alerts
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">🚀 Enhanced Engagement Features</h4>
-                  <p className="text-sm text-blue-800 mb-4">
-                    The messaging system, feedback collection, and automated notifications are now set up in your database. 
-                    The engagement tools help you maintain better communication with your students and track their progress more effectively.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
-                    <div>
-                      <strong>✅ Student Progress Tracking:</strong>
-                      <ul className="ml-4 mt-1 space-y-1">
-                        <li>• Detailed lesson completion tracking</li>
-                        <li>• Time spent analytics</li>
-                        <li>• Quiz performance monitoring</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <strong>✅ Communication Tools:</strong>
-                      <ul className="ml-4 mt-1 space-y-1">
-                        <li>• Direct messaging with students</li>
-                        <li>• Course announcements</li>
-                        <li>• Automated reminders</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
+
+        {/* Phase 2 Analytics Summary */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="w-5 h-5" />
+              <span>Advanced Analytics & Reporting</span>
+            </CardTitle>
+            <CardDescription>Comprehensive business intelligence for your training business</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <TrendingUp className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="font-medium mb-2">Revenue Analytics</h3>
+                  <p className="text-sm text-gray-600 mb-4">Track financial performance with monthly/quarterly trends and forecasting</p>
+                  <Button variant="outline" className="w-full" onClick={() => document.querySelector('[value="revenue"]')?.click()}>
+                    View Revenue
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <BarChart3 className="w-12 h-12 text-green-600 mx-auto mb-4" />
+                  <h3 className="font-medium mb-2">Course Comparison</h3>
+                  <p className="text-sm text-gray-600 mb-4">Side-by-side analysis of course performance and metrics</p>
+                  <Button variant="outline" className="w-full" onClick={() => document.querySelector('[value="comparison"]')?.click()}>
+                    Compare Courses
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Target className="w-12 h-12 text-purple-600 mx-auto mb-4" />
+                  <h3 className="font-medium mb-2">Student Retention</h3>
+                  <p className="text-sm text-gray-600 mb-4">Monitor engagement and identify at-risk students</p>
+                  <Button variant="outline" className="w-full" onClick={() => document.querySelector('[value="retention"]')?.click()}>
+                    View Retention
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <FileText className="w-12 h-12 text-orange-600 mx-auto mb-4" />
+                  <h3 className="font-medium mb-2">Export Reports</h3>
+                  <p className="text-sm text-gray-600 mb-4">Generate PDF/Excel reports for business analysis</p>
+                  <Button variant="outline" className="w-full" onClick={() => document.querySelector('[value="reports"]')?.click()}>
+                    Generate Reports
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">🚀 Phase 2: Advanced Analytics & Reporting Complete!</h4>
+              <p className="text-sm text-blue-800 mb-4">
+                Your trainer dashboard now includes comprehensive business intelligence tools to help you make data-driven decisions and grow your training business.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                <div>
+                  <strong>✅ Revenue Analytics:</strong>
+                  <ul className="ml-4 mt-1 space-y-1">
+                    <li>• Monthly/quarterly revenue trends</li>
+                    <li>• Growth forecasting</li>
+                    <li>• Revenue breakdown analysis</li>
+                    <li>• Financial performance metrics</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong>✅ Advanced Features:</strong>
+                  <ul className="ml-4 mt-1 space-y-1">
+                    <li>• Course performance comparison</li>
+                    <li>• Student retention tracking</li>
+                    <li>• Risk assessment tools</li>
+                    <li>• PDF/Excel export capabilities</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Course Creation Wizard Dialog */}
         <Dialog open={showCourseWizard} onOpenChange={setShowCourseWizard}>
