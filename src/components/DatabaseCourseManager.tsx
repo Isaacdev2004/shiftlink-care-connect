@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -75,42 +74,15 @@ const DatabaseCourseManager = ({ onManageCourse }: DatabaseCourseManagerProps) =
     }
   };
 
-  const handleSaveCourse = async (courseData: any) => {
-    try {
-      if (editingCourse) {
-        const { error } = await supabase
-          .from('courses')
-          .update(courseData)
-          .eq('id', editingCourse.id);
+  const handleSaveCourse = async () => {
+    toast({
+      title: "Success",
+      description: editingCourse ? "Course updated successfully" : "Course created successfully"
+    });
 
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('courses')
-          .insert([{
-            ...courseData,
-            trainer_id: user?.id
-          }]);
-
-        if (error) throw error;
-      }
-
-      toast({
-        title: "Success",
-        description: editingCourse ? "Course updated successfully" : "Course created successfully"
-      });
-
-      setShowForm(false);
-      setEditingCourse(null);
-      fetchCourses();
-    } catch (error) {
-      console.error('Error saving course:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save course",
-        variant: "destructive"
-      });
-    }
+    setShowForm(false);
+    setEditingCourse(null);
+    fetchCourses();
   };
 
   const handleDeleteCourse = async (courseId: string) => {
@@ -288,7 +260,7 @@ const DatabaseCourseManager = ({ onManageCourse }: DatabaseCourseManagerProps) =
             </DialogHeader>
             <DatabaseCourseForm
               course={editingCourse}
-              onSave={handleSaveCourse}
+              onSuccess={handleSaveCourse}
               onCancel={() => {
                 setShowForm(false);
                 setEditingCourse(null);
