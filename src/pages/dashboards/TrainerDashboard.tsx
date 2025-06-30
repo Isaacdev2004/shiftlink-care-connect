@@ -24,6 +24,7 @@ const TrainerDashboard = () => {
   const [showCourseWizard, setShowCourseWizard] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
   const [refreshCourses, setRefreshCourses] = useState(0);
+  const [activeTab, setActiveTab] = useState('courses');
 
   if (loading) {
     return (
@@ -47,6 +48,10 @@ const TrainerDashboard = () => {
 
   const handleManageCourse = (course: { id: string; title: string }) => {
     setSelectedCourse(course);
+  };
+
+  const navigateToTab = (tabValue: string) => {
+    setActiveTab(tabValue);
   };
 
   return (
@@ -100,7 +105,7 @@ const TrainerDashboard = () => {
           </Card>
         )}
 
-        <Tabs defaultValue="courses" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -164,7 +169,7 @@ const TrainerDashboard = () => {
                   <TrendingUp className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                   <h3 className="font-medium mb-2">Revenue Analytics</h3>
                   <p className="text-sm text-gray-600 mb-4">Track financial performance with monthly/quarterly trends and forecasting</p>
-                  <Button variant="outline" className="w-full" onClick={() => document.querySelector('[value="revenue"]')?.click()}>
+                  <Button variant="outline" className="w-full" onClick={() => navigateToTab('revenue')}>
                     View Revenue
                   </Button>
                 </CardContent>
@@ -175,7 +180,7 @@ const TrainerDashboard = () => {
                   <BarChart3 className="w-12 h-12 text-green-600 mx-auto mb-4" />
                   <h3 className="font-medium mb-2">Course Comparison</h3>
                   <p className="text-sm text-gray-600 mb-4">Side-by-side analysis of course performance and metrics</p>
-                  <Button variant="outline" className="w-full" onClick={() => document.querySelector('[value="comparison"]')?.click()}>
+                  <Button variant="outline" className="w-full" onClick={() => navigateToTab('comparison')}>
                     Compare Courses
                   </Button>
                 </CardContent>
@@ -186,7 +191,7 @@ const TrainerDashboard = () => {
                   <Target className="w-12 h-12 text-purple-600 mx-auto mb-4" />
                   <h3 className="font-medium mb-2">Student Retention</h3>
                   <p className="text-sm text-gray-600 mb-4">Monitor engagement and identify at-risk students</p>
-                  <Button variant="outline" className="w-full" onClick={() => document.querySelector('[value="retention"]')?.click()}>
+                  <Button variant="outline" className="w-full" onClick={() => navigateToTab('retention')}>
                     View Retention
                   </Button>
                 </CardContent>
@@ -197,7 +202,7 @@ const TrainerDashboard = () => {
                   <FileText className="w-12 h-12 text-orange-600 mx-auto mb-4" />
                   <h3 className="font-medium mb-2">Export Reports</h3>
                   <p className="text-sm text-gray-600 mb-4">Generate PDF/Excel reports for business analysis</p>
-                  <Button variant="outline" className="w-full" onClick={() => document.querySelector('[value="reports"]')?.click()}>
+                  <Button variant="outline" className="w-full" onClick={() => navigateToTab('reports')}>
                     Generate Reports
                   </Button>
                 </CardContent>
