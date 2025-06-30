@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import StudentLearningInterface from '@/components/StudentLearningInterface';
+import DatabaseCourseMarketplace from '@/components/DatabaseCourseMarketplace';
 
 const DSPDashboard = () => {
   const { user, loading } = useAuth();
@@ -37,14 +38,6 @@ const DSPDashboard = () => {
             </div>
             
             <div className="flex space-x-3">
-              <Button 
-                onClick={() => window.location.href = '/courses'}
-                variant="outline"
-                className="flex items-center space-x-2"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Browse Courses</span>
-              </Button>
               <Button 
                 onClick={() => window.location.href = '/learning'}
                 className="bg-medical-blue hover:bg-blue-800 flex items-center space-x-2"
@@ -118,29 +111,34 @@ const DSPDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/courses'}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Explore New Courses</span>
+                <span>Browse Course Catalog</span>
                 <ArrowRight className="w-5 h-5 text-gray-400" />
               </CardTitle>
-              <CardDescription>Discover and enroll in additional training</CardDescription>
+              <CardDescription>Discover and enroll in new training courses</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600">Browse our comprehensive course catalog.</p>
+              <p className="text-sm text-gray-600">Explore our comprehensive course catalog and find new learning opportunities.</p>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="learning" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="learning">My Learning</TabsTrigger>
+            <TabsTrigger value="courses">Browse Courses</TabsTrigger>
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
             <TabsTrigger value="progress">Progress Reports</TabsTrigger>
           </TabsList>
           
           <TabsContent value="learning" className="mt-6">
             <StudentLearningInterface />
+          </TabsContent>
+          
+          <TabsContent value="courses" className="mt-6">
+            <DatabaseCourseMarketplace />
           </TabsContent>
           
           <TabsContent value="certificates" className="mt-6">
