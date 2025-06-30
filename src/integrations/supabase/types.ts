@@ -625,6 +625,54 @@ export type Database = {
           },
         ]
       }
+      uploaded_certificates: {
+        Row: {
+          certificate_name: string
+          certificate_type: string
+          created_at: string
+          expiry_date: string | null
+          file_url: string
+          id: string
+          rejection_reason: string | null
+          status: string
+          student_id: string
+          updated_at: string
+          upload_date: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          certificate_name: string
+          certificate_type: string
+          created_at?: string
+          expiry_date?: string | null
+          file_url: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          student_id: string
+          updated_at?: string
+          upload_date?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          certificate_name?: string
+          certificate_type?: string
+          created_at?: string
+          expiry_date?: string | null
+          file_url?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          student_id?: string
+          updated_at?: string
+          upload_date?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
