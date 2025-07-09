@@ -1,14 +1,16 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, TrendingUp, Flag, Calendar, FileText, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Users, TrendingUp, Flag, Calendar, FileText, AlertTriangle, CheckCircle, Building, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ShiftAnalytics from '@/components/ShiftAnalytics';
 import CredentialReports from '@/components/CredentialReports';
 import DSPApprovalManager from '@/components/DSPApprovalManager';
 import JobFairManager from '@/components/JobFairManager';
+import CountyReportGenerator from '@/components/CountyReportGenerator';
 
 const CountyDashboard = () => {
   const { toast } = useToast();
@@ -21,7 +23,9 @@ const CountyDashboard = () => {
     upcomingJobFairs: 3,
     totalShifts: 2847,
     credentialIssues: 23,
-    complianceRate: 94.2
+    complianceRate: 94.2,
+    activeDrivers: 45,
+    transportationRequests: 89
   };
 
   const handleGenerateReport = () => {
@@ -43,7 +47,10 @@ const CountyDashboard = () => {
       'Upcoming Job Fairs': stats.upcomingJobFairs,
       'Credential Issues': stats.credentialIssues,
       'Compliance Rate': `${stats.complianceRate}%`,
-      'Section 3': 'Compliance Status',
+      'Section 3': 'Transportation Metrics',
+      'Active Drivers': stats.activeDrivers,
+      'Transportation Requests': stats.transportationRequests,
+      'Section 4': 'Compliance Status',
       'Overall Rating': stats.complianceRate >= 95 ? 'Excellent' : stats.complianceRate >= 90 ? 'Good' : 'Needs Improvement',
       'Action Required': stats.credentialIssues > 20 ? 'Yes - Address credential issues' : 'No - Monitoring only',
       'Recommendations': stats.flaggedDSPs > 5 ? 'Review flagged DSPs immediately' : 'Continue regular monitoring'
@@ -93,8 +100,8 @@ const CountyDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -135,6 +142,18 @@ const CountyDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
+                  <p className="text-sm font-medium text-gray-600">Active Drivers</p>
+                  <p className="text-2xl font-bold text-blue-600">{stats.activeDrivers}</p>
+                </div>
+                <MapPin className="w-8 h-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
                   <p className="text-sm font-medium text-gray-600">Compliance Rate</p>
                   <p className="text-2xl font-bold text-blue-600">{stats.complianceRate}%</p>
                 </div>
@@ -146,11 +165,13 @@ const CountyDashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="analytics">Shift Analytics</TabsTrigger>
-            <TabsTrigger value="credentials">Credential Reports</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="credentials">Credentials</TabsTrigger>
             <TabsTrigger value="dsps">DSP Management</TabsTrigger>
             <TabsTrigger value="jobfairs">Job Fairs</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics">
@@ -167,6 +188,102 @@ const CountyDashboard = () => {
 
           <TabsContent value="jobfairs">
             <JobFairManager />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <CountyReportGenerator />
+          </TabsContent>
+
+          <TabsContent value="overview">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Regional Facilities Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building className="w-5 h-5" />
+                    Regional Facilities
+                  </CardTitle>
+                  <CardDescription>Overview of facilities in your county jurisdiction</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { name: 'Sunrise Care Center', dsps: 28, status: 'Compliant', location: 'Columbus' },
+                      { name: 'Valley View Residential', dsps: 22, status: 'Review Required', location: 'Dublin' },
+                      { name: 'Maple Heights Support', dsps: 19, status: 'Compliant', location: 'Westerville' },
+                      { name: 'Riverside Manor', dsps: 31, status: 'Compliant', location: 'Delaware' },
+                      { name: 'Oakwood Center', dsps: 25, status: 'Non-Compliant', location: 'Worthington' }
+                    ].map((facility, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{facility.name}</p>
+                          <p className="text-sm text-gray-500">{facility.dsps} DSPs • {facility.location}</p>
+                        </div>
+                        <Badge 
+                          variant={facility.status === 'Compliant' ? 'default' : 
+                                  facility.status === 'Review Required' ? 'secondary' : 'destructive'}
+                          className={facility.status === 'Compliant' ? 'bg-green-500' : 
+                                    facility.status === 'Review Required' ? 'bg-orange-500' : ''}
+                        >
+                          {facility.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Latest updates and actions in your county</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { 
+                        action: 'DSP Application Approved', 
+                        details: 'Sarah Johnson - Valley View Residential',
+                        time: '2 hours ago',
+                        type: 'approval'
+                      },
+                      { 
+                        action: 'Credential Expiring Soon', 
+                        details: 'CPR Certification - Mike Wilson',
+                        time: '4 hours ago',
+                        type: 'alert'
+                      },
+                      { 
+                        action: 'Job Fair Scheduled', 
+                        details: 'Columbus Community Center - June 25th',
+                        time: '1 day ago',
+                        type: 'event'
+                      },
+                      { 
+                        action: 'Shift Coverage Alert', 
+                        details: 'Maple Heights - Weekend coverage needed',
+                        time: '2 days ago',
+                        type: 'alert'
+                      }
+                    ].map((activity, index) => (
+                      <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
+                        <div className={`w-3 h-3 rounded-full mt-1 ${
+                          activity.type === 'approval' ? 'bg-green-500' :
+                          activity.type === 'alert' ? 'bg-orange-500' :
+                          'bg-blue-500'
+                        }`} />
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{activity.action}</p>
+                          <p className="text-sm text-gray-600">{activity.details}</p>
+                          <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
