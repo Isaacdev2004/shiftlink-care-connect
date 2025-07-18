@@ -10,7 +10,6 @@ import EVVLogs from '@/components/EVVLogs';
 import ComplianceReports from '@/components/ComplianceReports';
 
 const EVVClockSystem = () => {
-  const [currentShift, setCurrentShift] = useState(null);
   const [todayStats] = useState({
     totalShifts: 12,
     clockedInDSPs: 8,
@@ -80,7 +79,7 @@ const EVVClockSystem = () => {
         </TabsList>
 
         <TabsContent value="clockin">
-          <ClockInOut currentShift={currentShift} setCurrentShift={setCurrentShift} />
+          <ClockInOut />
         </TabsContent>
 
         <TabsContent value="logs">

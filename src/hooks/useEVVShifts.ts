@@ -77,10 +77,16 @@ export const useEVVShifts = () => {
 
       if (error) throw error;
       
-      setShifts(data || []);
+      // Type cast the data to match our interface
+      const typedShifts = (data || []).map(shift => ({
+        ...shift,
+        status: shift.status as EVVShift['status']
+      }));
+      
+      setShifts(typedShifts);
       
       // Find current active shift
-      const activeShift = data?.find(shift => shift.status === 'active');
+      const activeShift = typedShifts.find(shift => shift.status === 'active');
       setCurrentShift(activeShift || null);
     } catch (err) {
       console.error('Error fetching shifts:', err);
@@ -140,10 +146,16 @@ export const useEVVShifts = () => {
 
       if (logError) throw logError;
 
-      setCurrentShift(shiftData);
+      // Type cast the returned data
+      const typedShift = {
+        ...shiftData,
+        status: shiftData.status as EVVShift['status']
+      };
+
+      setCurrentShift(typedShift);
       await fetchShifts();
       
-      return shiftData;
+      return typedShift;
     } catch (err) {
       console.error('Error clocking in:', err);
       throw err;
@@ -193,7 +205,11 @@ export const useEVVShifts = () => {
       setCurrentShift(null);
       await fetchShifts();
       
-      return shiftData;
+      // Type cast the returned data
+      return {
+        ...shiftData,
+        status: shiftData.status as EVVShift['status']
+      };
     } catch (err) {
       console.error('Error clocking out:', err);
       throw err;
