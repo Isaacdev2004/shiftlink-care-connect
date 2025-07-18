@@ -1,87 +1,98 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Download, MapPin, Clock, User, FileText } from 'lucide-react';
+import { useEVVShifts } from '@/hooks/useEVVShifts';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+
+interface EVVLog {
+  id: string;
+  shift_id: string;
+  dsp_id: string;
+  event_type: string;
+  event_timestamp: string;
+  gps_latitude: number;
+  gps_longitude: number;
+  location_address?: string;
+  verification_status: string;
+  created_at: string;
+}
 
 const EVVLogs = () => {
+  const { user } = useAuth();
+  const { shifts, clients } = useEVVShifts();
+  const [logs, setLogs] = useState<EVVLog[]>([]);
   const [dateRange, setDateRange] = useState('7');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [loading, setLoading] = useState(true);
 
-  const evvLogs = [
-    {
-      id: '1',
-      dsp: 'Sarah Johnson',
-      client: 'Mary Wilson',
-      facility: 'Sunrise Care Center',
-      clockIn: '2024-06-15 08:00:00',
-      clockOut: '2024-06-15 16:00:00',
-      duration: '8h 0m',
-      location: '40.7128, -74.0060',
-      status: 'verified',
-      medicaidId: 'MED-2024-001'
-    },
-    {
-      id: '2',
-      dsp: 'Michael Chen',
-      client: 'Robert Davis',
-      facility: 'Valley View Manor',
-      clockIn: '2024-06-15 07:30:00',
-      clockOut: '2024-06-15 15:30:00',
-      duration: '8h 0m',
-      location: '40.7589, -73.9851',
-      status: 'verified',
-      medicaidId: 'MED-2024-002'
-    },
-    {
-      id: '3',
-      dsp: 'Jennifer Brown',
-      client: 'Linda Garcia',
-      facility: 'Oakwood Center',
-      clockIn: '2024-06-14 09:00:00',
-      clockOut: '2024-06-14 17:00:00',
-      duration: '8h 0m',
-      location: '40.6782, -73.9442',
-      status: 'pending',
-      medicaidId: 'MED-2024-003'
-    },
-    {
-      id: '4',
-      dsp: 'David Rodriguez',
-      client: 'Patricia Jones',
-      facility: 'Maple Heights',
-      clockIn: '2024-06-14 08:15:00',
-      clockOut: '2024-06-14 16:15:00',
-      duration: '8h 0m',
-      location: '40.7505, -73.9934',
-      status: 'flagged',
-      medicaidId: 'MED-2024-004'
+  const fetchLogs = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - parseInt(dateRange));
+
+      const { data, error } = await supabase
+        .from('evv_logs')
+        .select('*')
+        .eq('dsp_id', user.id)
+        .gte('created_at', daysAgo.toISOString())
+        .order('event_timestamp', { ascending: false });
+
+      if (error) throw error;
+      setLogs(data || []);
+    } catch (error) {
+      console.error('Error fetching EVV logs:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const filteredLogs = evvLogs.filter(log => {
+  useEffect(() => {
+    fetchLogs();
+  }, [user, dateRange]);
+
+  const filteredLogs = logs.filter(log => {
     if (filterStatus === 'all') return true;
-    return log.status === filterStatus;
+    return log.verification_status === filterStatus;
   });
 
+  const getShiftInfo = (shiftId: string) => {
+    const shift = shifts.find(s => s.id === shiftId);
+    if (!shift) return { clientName: 'Unknown', facility: 'Unknown', medicaidId: 'Unknown' };
+    
+    const client = clients.find(c => c.id === shift.client_id);
+    return {
+      clientName: client?.name || 'Unknown',
+      facility: shift.facility_name,
+      medicaidId: shift.medicaid_id
+    };
+  };
+
   const exportToCSV = () => {
-    const headers = ['DSP Name', 'Client', 'Facility', 'Clock In', 'Clock Out', 'Duration', 'GPS Location', 'Status', 'Medicaid ID'];
+    const headers = ['Event Type', 'Client', 'Facility', 'Timestamp', 'GPS Location', 'Address', 'Status', 'Medicaid ID'];
     const csvContent = [
       headers.join(','),
-      ...filteredLogs.map(log => [
-        log.dsp,
-        log.client,
-        log.facility,
-        log.clockIn,
-        log.clockOut,
-        log.duration,
-        log.location,
-        log.status,
-        log.medicaidId
-      ].join(','))
+      ...filteredLogs.map(log => {
+        const shiftInfo = getShiftInfo(log.shift_id);
+        return [
+          log.event_type,
+          shiftInfo.clientName,
+          shiftInfo.facility,
+          new Date(log.event_timestamp).toLocaleString(),
+          `${log.gps_latitude}, ${log.gps_longitude}`,
+          log.location_address || '',
+          log.verification_status,
+          shiftInfo.medicaidId
+        ].map(field => `"${field}"`).join(',');
+      })
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -101,6 +112,28 @@ const EVVLogs = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const getEventTypeColor = (eventType: string) => {
+    switch (eventType) {
+      case 'clock_in': return 'bg-blue-100 text-blue-800';
+      case 'clock_out': return 'bg-purple-100 text-purple-800';
+      case 'break_start': return 'bg-orange-100 text-orange-800';
+      case 'break_end': return 'bg-teal-100 text-teal-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div>Loading EVV logs...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -143,7 +176,7 @@ const EVVLogs = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Logs</p>
+                <p className="text-sm text-gray-600">Total Events</p>
                 <p className="text-2xl font-bold">{filteredLogs.length}</p>
               </div>
               <FileText className="w-8 h-8 text-blue-500" />
@@ -157,7 +190,7 @@ const EVVLogs = () => {
               <div>
                 <p className="text-sm text-gray-600">Verified</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {filteredLogs.filter(log => log.status === 'verified').length}
+                  {filteredLogs.filter(log => log.verification_status === 'verified').length}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-green-500" />
@@ -171,7 +204,7 @@ const EVVLogs = () => {
               <div>
                 <p className="text-sm text-gray-600">Pending Review</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {filteredLogs.filter(log => log.status === 'pending').length}
+                  {filteredLogs.filter(log => log.verification_status === 'pending').length}
                 </p>
               </div>
               <User className="w-8 h-8 text-yellow-500" />
@@ -189,47 +222,62 @@ const EVVLogs = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>DSP</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Facility</TableHead>
-                  <TableHead>Clock In</TableHead>
-                  <TableHead>Clock Out</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>GPS Location</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Medicaid ID</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="font-medium">{log.dsp}</TableCell>
-                    <TableCell>{log.client}</TableCell>
-                    <TableCell>{log.facility}</TableCell>
-                    <TableCell>{new Date(log.clockIn).toLocaleString()}</TableCell>
-                    <TableCell>{new Date(log.clockOut).toLocaleString()}</TableCell>
-                    <TableCell>{log.duration}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        <span className="text-sm">{log.location}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(log.status)}>
-                        {log.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-sm">{log.medicaidId}</TableCell>
+          {filteredLogs.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No EVV logs found for the selected period.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Event</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Facility</TableHead>
+                    <TableHead>Timestamp</TableHead>
+                    <TableHead>GPS Location</TableHead>
+                    <TableHead>Address</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Medicaid ID</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredLogs.map((log) => {
+                    const shiftInfo = getShiftInfo(log.shift_id);
+                    return (
+                      <TableRow key={log.id}>
+                        <TableCell>
+                          <Badge className={getEventTypeColor(log.event_type)}>
+                            {log.event_type.replace('_', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">{shiftInfo.clientName}</TableCell>
+                        <TableCell>{shiftInfo.facility}</TableCell>
+                        <TableCell>{new Date(log.event_timestamp).toLocaleString()}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            <span className="text-sm">
+                              {log.gps_latitude.toFixed(6)}, {log.gps_longitude.toFixed(6)}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">
+                          {log.location_address || 'Address not available'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(log.verification_status)}>
+                            {log.verification_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">{shiftInfo.medicaidId}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

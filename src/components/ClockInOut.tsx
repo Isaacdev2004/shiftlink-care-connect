@@ -4,17 +4,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Clock, MapPin, Play, Square, Navigation, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Clock, MapPin, Play, Square, Navigation, AlertCircle, CheckCircle } from 'lucide-react';
+import { useEVVShifts } from '@/hooks/useEVVShifts';
+import { getCurrentLocation, LocationResult } from '@/utils/geoLocation';
+import ClientSelector from '@/components/ClientSelector';
+import { toast } from 'sonner';
 
-interface ClockInOutProps {
-  currentShift: any;
-  setCurrentShift: (shift: any) => void;
-}
-
-const ClockInOut = ({ currentShift, setCurrentShift }: ClockInOutProps) => {
-  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+const ClockInOut = () => {
+  const { shifts, clients, currentShift, loading, clockIn, clockOut } = useEVVShifts();
+  const [location, setLocation] = useState<LocationResult | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [clockingIn, setClockingIn] = useState(false);
+  const [clockingOut, setClockingOut] = useState(false);
+  const [clockOutNotes, setClockOutNotes] = useState('');
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -24,67 +30,69 @@ const ClockInOut = ({ currentShift, setCurrentShift }: ClockInOutProps) => {
     return () => clearInterval(timer);
   }, []);
 
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by this browser');
-      return;
+  const getLocation = async () => {
+    setGettingLocation(true);
+    try {
+      const locationResult = await getCurrentLocation();
+      setLocation(locationResult);
+      setLocationError(null);
+      toast.success('Location updated successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get location';
+      setLocationError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setGettingLocation(false);
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-        setLocationError(null);
-      },
-      (error) => {
-        setLocationError(`Error getting location: ${error.message}`);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
-      }
-    );
   };
 
-  const handleClockIn = () => {
-    if (!location) {
-      getCurrentLocation();
-      return;
+  const handleStartShift = async () => {
+    if (!selectedClientId || !location) return;
+
+    setClockingIn(true);
+    try {
+      await clockIn(selectedClientId, location.coords, location.address);
+      toast.success('Successfully clocked in!');
+      setSelectedClientId(null);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to clock in';
+      toast.error(errorMessage);
+    } finally {
+      setClockingIn(false);
     }
-
-    const newShift = {
-      id: Date.now().toString(),
-      startTime: new Date(),
-      location: location,
-      facility: 'Sunrise Care Center',
-      client: 'John Smith',
-      status: 'active'
-    };
-
-    setCurrentShift(newShift);
-    console.log('Clocked in:', newShift);
   };
 
-  const handleClockOut = () => {
-    if (currentShift && location) {
-      const updatedShift = {
-        ...currentShift,
-        endTime: new Date(),
-        endLocation: location,
-        status: 'completed'
-      };
+  const handleClockOut = async () => {
+    if (!location) return;
 
-      console.log('Clocked out:', updatedShift);
-      setCurrentShift(null);
+    setClockingOut(true);
+    try {
+      await clockOut(location.coords, location.address, clockOutNotes || undefined);
+      toast.success('Successfully clocked out!');
+      setClockOutNotes('');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to clock out';
+      toast.error(errorMessage);
+    } finally {
+      setClockingOut(false);
     }
   };
 
   useEffect(() => {
-    getCurrentLocation();
+    getLocation();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="text-lg">Loading EVV system...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -115,14 +123,21 @@ const ClockInOut = ({ currentShift, setCurrentShift }: ClockInOutProps) => {
               <AlertDescription>{locationError}</AlertDescription>
             </Alert>
           ) : location ? (
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="bg-green-100 text-green-800">
-                <Navigation className="w-3 h-3 mr-1" />
-                GPS Located
-              </Badge>
-              <span className="text-sm text-gray-600">
-                {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
-              </span>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Navigation className="w-3 h-3 mr-1" />
+                  GPS Located
+                </Badge>
+                <span className="text-sm text-gray-600">
+                  {location.coords.lat.toFixed(6)}, {location.coords.lng.toFixed(6)}
+                </span>
+              </div>
+              {location.address && (
+                <div className="text-sm text-gray-600 ml-6">
+                  {location.address}
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2">
@@ -130,8 +145,13 @@ const ClockInOut = ({ currentShift, setCurrentShift }: ClockInOutProps) => {
                 <Navigation className="w-3 h-3 mr-1" />
                 Getting Location...
               </Badge>
-              <Button variant="outline" size="sm" onClick={getCurrentLocation}>
-                Retry
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={getLocation}
+                disabled={gettingLocation}
+              >
+                {gettingLocation ? 'Getting...' : 'Retry'}
               </Button>
             </div>
           )}
@@ -147,22 +167,26 @@ const ClockInOut = ({ currentShift, setCurrentShift }: ClockInOutProps) => {
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="font-medium">Facility:</span>
-                <span>{currentShift.facility}</span>
+                <span className="font-medium">Client:</span>
+                <span>{clients.find(c => c.id === currentShift.client_id)?.name || 'Unknown'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium">Client:</span>
-                <span>{currentShift.client}</span>
+                <span className="font-medium">Facility:</span>
+                <span>{currentShift.facility_name}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Start Time:</span>
-                <span>{currentShift.startTime.toLocaleTimeString()}</span>
+                <span>{new Date(currentShift.actual_clock_in_time!).toLocaleTimeString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Duration:</span>
                 <span>
-                  {Math.floor((currentTime.getTime() - currentShift.startTime.getTime()) / 60000)} minutes
+                  {Math.floor((currentTime.getTime() - new Date(currentShift.actual_clock_in_time!).getTime()) / 60000)} minutes
                 </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Medicaid ID:</span>
+                <span className="font-mono text-sm">{currentShift.medicaid_id}</span>
               </div>
             </div>
           </CardContent>
@@ -170,44 +194,84 @@ const ClockInOut = ({ currentShift, setCurrentShift }: ClockInOutProps) => {
       )}
 
       {/* Clock In/Out Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Time Clock</CardTitle>
-          <CardDescription>
-            GPS verification required for EVV compliance
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!currentShift ? (
-            <Button 
-              onClick={handleClockIn}
-              disabled={!location}
-              className="w-full h-16 text-lg bg-green-600 hover:bg-green-700"
-            >
-              <Play className="w-6 h-6 mr-2" />
-              Clock In
-            </Button>
-          ) : (
+      {!currentShift ? (
+        <ClientSelector
+          clients={clients}
+          selectedClientId={selectedClientId}
+          onClientSelect={setSelectedClientId}
+          onStartShift={handleStartShift}
+          loading={clockingIn}
+        />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>End Shift</CardTitle>
+            <CardDescription>
+              Add any notes about the shift and clock out
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Shift Notes (Optional)
+              </label>
+              <Textarea
+                value={clockOutNotes}
+                onChange={(e) => setClockOutNotes(e.target.value)}
+                placeholder="Enter any notes about the shift, services provided, or client updates..."
+                rows={3}
+              />
+            </div>
+            
             <Button 
               onClick={handleClockOut}
-              disabled={!location}
+              disabled={!location || clockingOut}
               className="w-full h-16 text-lg bg-red-600 hover:bg-red-700"
             >
               <Square className="w-6 h-6 mr-2" />
-              Clock Out
+              {clockingOut ? 'Clocking Out...' : 'Clock Out'}
             </Button>
-          )}
-          
-          {!location && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                GPS location is required for EVV compliance. Please enable location services.
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* EVV Compliance Alert */}
+      {!location && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            GPS location is required for EVV compliance. Please enable location services and allow location access.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Recent Shifts Summary */}
+      {shifts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Shifts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {shifts.slice(0, 3).map((shift) => (
+                <div key={shift.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                  <div>
+                    <div className="font-medium text-sm">
+                      {clients.find(c => c.id === shift.client_id)?.name || 'Unknown Client'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(shift.shift_date).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <Badge variant={shift.status === 'completed' ? 'default' : 'secondary'}>
+                    {shift.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

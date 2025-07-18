@@ -145,6 +145,42 @@ export type Database = {
           },
         ]
       }
+      clients: {
+        Row: {
+          address: string
+          care_notes: string | null
+          created_at: string
+          emergency_contact: string | null
+          id: string
+          is_active: boolean
+          medicaid_id: string
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          address: string
+          care_notes?: string | null
+          created_at?: string
+          emergency_contact?: string | null
+          id?: string
+          is_active?: boolean
+          medicaid_id: string
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          address?: string
+          care_notes?: string | null
+          created_at?: string
+          emergency_contact?: string | null
+          id?: string
+          is_active?: boolean
+          medicaid_id?: string
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
       course_enrollments: {
         Row: {
           amount_paid: number | null
@@ -419,6 +455,128 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      evv_logs: {
+        Row: {
+          created_at: string
+          device_info: Json | null
+          dsp_id: string
+          event_timestamp: string
+          event_type: string
+          gps_latitude: number
+          gps_longitude: number
+          id: string
+          location_address: string | null
+          shift_id: string
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: Json | null
+          dsp_id: string
+          event_timestamp?: string
+          event_type: string
+          gps_latitude: number
+          gps_longitude: number
+          id?: string
+          location_address?: string | null
+          shift_id: string
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: Json | null
+          dsp_id?: string
+          event_timestamp?: string
+          event_type?: string
+          gps_latitude?: number
+          gps_longitude?: number
+          id?: string
+          location_address?: string | null
+          shift_id?: string
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evv_logs_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "evv_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evv_shifts: {
+        Row: {
+          actual_clock_in_time: string | null
+          actual_clock_out_time: string | null
+          client_id: string
+          clock_in_address: string | null
+          clock_in_gps_lat: number | null
+          clock_in_gps_lng: number | null
+          clock_out_address: string | null
+          clock_out_gps_lat: number | null
+          clock_out_gps_lng: number | null
+          created_at: string
+          dsp_id: string
+          facility_name: string
+          id: string
+          medicaid_id: string
+          notes: string | null
+          scheduled_end_time: string
+          scheduled_start_time: string
+          service_type: string
+          shift_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actual_clock_in_time?: string | null
+          actual_clock_out_time?: string | null
+          client_id: string
+          clock_in_address?: string | null
+          clock_in_gps_lat?: number | null
+          clock_in_gps_lng?: number | null
+          clock_out_address?: string | null
+          clock_out_gps_lat?: number | null
+          clock_out_gps_lng?: number | null
+          created_at?: string
+          dsp_id: string
+          facility_name: string
+          id?: string
+          medicaid_id: string
+          notes?: string | null
+          scheduled_end_time: string
+          scheduled_start_time: string
+          service_type?: string
+          shift_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_clock_in_time?: string | null
+          actual_clock_out_time?: string | null
+          client_id?: string
+          clock_in_address?: string | null
+          clock_in_gps_lat?: number | null
+          clock_in_gps_lng?: number | null
+          clock_out_address?: string | null
+          clock_out_gps_lat?: number | null
+          clock_out_gps_lng?: number | null
+          created_at?: string
+          dsp_id?: string
+          facility_name?: string
+          id?: string
+          medicaid_id?: string
+          notes?: string | null
+          scheduled_end_time?: string
+          scheduled_start_time?: string
+          service_type?: string
+          shift_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {
