@@ -62,7 +62,7 @@ const CallToAction = () => {
           <h3 className="text-4xl font-bold mb-6">Ready to Transform Healthcare Staffing?</h3>
           <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8">
             Join thousands of healthcare professionals who are already using ShiftLink to build better careers, 
-            fill critical staffing needs, and improve patient care across California.
+            fill critical staffing needs, and improve patient care across Ohio.
           </p>
           <div className="flex flex-wrap justify-center gap-6 mb-8">
             <div className="flex items-center space-x-2">
@@ -120,14 +120,14 @@ const CallToAction = () => {
         <div className="bg-white/10 rounded-xl p-8 border border-white/20 text-center">
           <h4 className="text-2xl font-bold mb-4">Healthcare Staffing Crisis is Real</h4>
           <p className="text-blue-100 mb-6 max-w-4xl mx-auto">
-            California faces a critical shortage of qualified healthcare staff. Every day, agencies struggle to fill essential shifts, 
+            Ohio faces a critical shortage of qualified healthcare staff. Every day, agencies struggle to fill essential shifts, 
             and qualified DSPs miss opportunities. ShiftLink bridges this gap with intelligent matching and verified credentials.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-red-400 mb-2">-23%</div>
-              <p className="text-blue-100 text-sm">Healthcare worker shortage in CA</p>
+              <p className="text-blue-100 text-sm">Healthcare worker shortage in OH</p>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-yellow-400 mb-2">72%</div>

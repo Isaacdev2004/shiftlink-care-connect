@@ -121,7 +121,7 @@ const Terms = () => {
                   User contact information is protected and only shared between parties after a booking is confirmed through the platform.
                 </p>
                 <p>
-                  GPS tracking data is collected for EVV (Electronic Visit Verification) compliance and is accessible by relevant county boards as required by law.
+                  GPS tracking data is collected for EVV (Electronic Visit Verification) compliance and is accessible by relevant county boards as required by Ohio state law and federal regulations.
                 </p>
               </div>
             </section>
@@ -130,10 +130,10 @@ const Terms = () => {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Compliance and Legal Requirements</h2>
               <div className="space-y-3 text-gray-700">
                 <p>
-                  All users must comply with applicable federal, state, and local laws regarding healthcare services, including but not limited to HIPAA, EVV requirements, and professional licensing regulations.
+                  All users must comply with applicable federal, state, and local laws regarding healthcare services, including but not limited to HIPAA, EVV requirements, Ohio Department of Developmental Disabilities (DODD) regulations, and professional licensing requirements.
                 </p>
                 <p>
-                  ShiftLink maintains logs and documentation as required for regulatory compliance and audit purposes.
+                  ShiftLink maintains logs and documentation as required for regulatory compliance and audit purposes in accordance with Ohio state requirements.
                 </p>
               </div>
             </section>

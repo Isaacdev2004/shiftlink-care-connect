@@ -39,9 +39,9 @@ const ComplianceReports = () => {
     }
   };
 
-  const generateMedicaidReport = () => {
-    console.log('Generating Medicaid compliance report...');
-    // This would generate a detailed report for Medicaid submission
+  const generateDODDReport = () => {
+    console.log('Generating DODD compliance report...');
+    // This would generate a detailed report for DODD submission
   };
 
   const exportComplianceData = () => {
@@ -88,9 +88,9 @@ const ComplianceReports = () => {
             <Download className="w-4 h-4 mr-2" />
             Export Data
           </Button>
-          <Button onClick={generateMedicaidReport} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={generateDODDReport} className="bg-blue-600 hover:bg-blue-700">
             <FileText className="w-4 h-4 mr-2" />
-            Generate Medicaid Report
+            Generate DODD Report
           </Button>
         </div>
       </div>
@@ -213,11 +213,11 @@ const ComplianceReports = () => {
           </CardContent>
         </Card>
 
-        {/* Medicaid Requirements */}
+        {/* DODD Requirements */}
         <Card>
           <CardHeader>
-            <CardTitle>Medicaid EVV Requirements</CardTitle>
-            <CardDescription>Federal compliance checklist</CardDescription>
+            <CardTitle>DODD EVV Requirements</CardTitle>
+            <CardDescription>Ohio compliance checklist</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
