@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -58,9 +57,9 @@ const Index = () => {
       navigate('/dashboard/dsp'); // Default for now
     } else {
       if (selectedRole) {
-        navigate(`/auth?role=${selectedRole}`);
+        navigate(`/signup?role=${selectedRole}`);
       } else {
-        navigate('/auth');
+        navigate('/signup');
       }
     }
   };
@@ -116,10 +115,10 @@ const Index = () => {
                 </>
               ) : (
                 <>
-                  <Button variant="outline" onClick={() => navigate('/auth')}>
+                  <Button variant="outline" onClick={() => navigate('/login')}>
                     Login
                   </Button>
-                  <Button onClick={() => navigate('/auth')} className="bg-medical-blue hover:bg-blue-800">
+                  <Button onClick={() => navigate('/signup')} className="bg-medical-blue hover:bg-blue-800">
                     Sign Up
                   </Button>
                 </>
