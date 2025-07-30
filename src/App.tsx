@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import AdminDashboard from "./pages/dashboards/AdminDashboard";
 import TrainerDashboard from "./pages/dashboards/TrainerDashboard";
 import DSPDashboard from "./pages/dashboards/DSPDashboard";
@@ -34,9 +36,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            {/* Redirect old auth routes to the unified auth page */}
-            <Route path="/login" element={<Navigate to="/auth" replace />} />
-            <Route path="/register" element={<Navigate to="/auth" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            {/* Redirect old register route to the new signup page */}
+            <Route path="/register" element={<Navigate to="/signup" replace />} />
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
             <Route path="/dashboard/trainer" element={<TrainerDashboard />} />
             <Route path="/dashboard/dsp" element={<DSPDashboard />} />
