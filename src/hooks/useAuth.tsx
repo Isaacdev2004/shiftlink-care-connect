@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       password,
       options: {
         data: userData,
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: undefined, // Disable email confirmation
       },
     });
     return { error };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -83,7 +82,11 @@ const Signup = () => {
           setError(error.message);
         }
       } else {
-        setSuccess('Account created successfully! Please check your email to verify your account.');
+        setSuccess('Account created successfully! You can now log in.');
+        // Redirect to login page after successful signup
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
       }
     } catch (err: any) {
       setError('An unexpected error occurred. Please try again.');
